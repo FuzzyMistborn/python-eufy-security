@@ -365,7 +365,7 @@ Headers:
 Body:
 ```
 {
-	"device_sn": "REDACTED", 
+    "device_sn": "REDACTED", 
     "station_sn": "REDACTED", 
     "proto": 2
 }
@@ -379,5 +379,29 @@ Response
     "data": {
         "url": "rtmp://p2p-vir-7.eufylife.com/hls/REDACTED=?time=1563126670&token=REDACTED"
     }
+}
+```
+
+## Stop Stream
+POST `https://mysecurity.eufylife.com/api/v1/web/equipment/stop_stream`
+
+Headers:
+
+`x-auth-token: AUTH_TOKEN_HERE`
+
+Body:
+```
+{
+    "device_sn": "REDACTED", 
+    "station_sn": "REDACTED", 
+    "proto": 2
+}
+```
+
+Response
+```
+{
+    "code": 0,
+    "msg": "Succeed."
 }
 ```
