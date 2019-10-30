@@ -7,12 +7,6 @@ class EufySecurityError(Exception):
     pass
 
 
-class ExpiredTokenError(EufySecurityError):
-    """Define an error to throw upon an expired access token."""
-
-    pass
-
-
 class InvalidCredentialsError(EufySecurityError):
     """Define an error for unauthenticated accounts."""
 

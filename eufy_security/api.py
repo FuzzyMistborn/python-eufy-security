@@ -40,8 +40,6 @@ class API:
             auth_resp["data"]["token_expires_at"]
         )
 
-        await self.async_update_device_info()
-
     async def async_update_device_info(self) -> None:
         """Get the latest device info."""
         devices_resp = await self.request("post", "app/get_devs_list")
@@ -63,8 +61,11 @@ class API:
         json: Optional[dict] = None,
     ) -> dict:
         """Make a request the API.com."""
-        if self._token_expiration and datetime.now() > self._token_expiration:
-            raise ExpiredTokenError("The access token has expired")
+        if self._token_expiration and datetime.now() >= self._token_expiration:
+            _LOGGER.info("Access token expired; fetching a new one")
+            self._token = None
+            self._token_expiration = None
+            await self.async_authenticate()
 
         url: str = f"{API_BASE}/{endpoint}"
 
@@ -100,4 +101,5 @@ async def async_login(email: str, password: str, websession: ClientSession) -> A
     """Return an authenticated API object."""
     api: API = API(email, password, websession)
     await api.async_authenticate()
+    await api.async_update_device_info()
     return api
