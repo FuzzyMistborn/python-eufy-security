@@ -14,6 +14,13 @@ The library is currently supported on
 
 TBD
 
+# Account Information
+
+Because of the way the Eufy Security private API works, an email/password combo cannot
+work with _both_ the Eufy Security mobile app _and_ this library. It is recommended to
+use the mobile app to create a secondary "guest" account with a separate email address
+and use it with this library.
+
 # Usage
 
 Everything starts with an:
