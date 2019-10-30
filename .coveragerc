@@ -1,0 +1,11 @@
+[run]
+source = eufy_security
+
+omit =
+    eufy_security/__version__.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if TYPE_CHECKING:
+

@@ -7,7 +7,7 @@ from aiohttp import ClientSession
 from aiohttp.client_exceptions import ClientError
 
 from .camera import Camera
-from .errors import ExpiredTokenError, InvalidCredentialsError, RequestError
+from .errors import RequestError, raise_error
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -40,13 +40,19 @@ class API:
             auth_resp["data"]["token_expires_at"]
         )
 
+    async def async_get_history(self) -> dict:
+        """Get the camera's history."""
+        history_resp = await self.request("post", "event/app/get_all_history_record")
+
+        return history_resp["data"]
+
     async def async_update_device_info(self) -> None:
         """Get the latest device info."""
         devices_resp = await self.request("post", "app/get_devs_list")
 
         for device_info in devices_resp["data"]:
             if device_info["device_sn"] in self.cameras:
-                camera = self.cameras[device_info["device_info"]]
+                camera = self.cameras[device_info["device_sn"]]
                 camera.camera_info = device_info
                 continue
 
@@ -78,23 +84,27 @@ class API:
             method, url, headers=headers, json=json
         ) as resp:
             try:
+                resp.raise_for_status()
                 data: dict = await resp.json(content_type=None)
 
                 if not data:
                     raise RequestError(f"No response while requesting {endpoint}")
 
-                if data["code"] != 0:
-                    raise RequestError(
-                        f"There was an error while requesting {endpoint}: {data['msg']}"
-                    )
+                _raise_on_error(data)
 
                 return data
             except ClientError as err:
-                if "401" in str(err):
-                    raise InvalidCredentialsError("Invalid credentials")
                 raise RequestError(
-                    f"There was an unknown error while requesting {endpoint}"
+                    f"There was an unknown error while requesting {endpoint}: {err}"
                 )
+
+
+def _raise_on_error(data: dict) -> None:
+    """Raise appropriately when a returned data payload contains an error."""
+    if data["code"] == 0:
+        return
+
+    raise_error(data)
 
 
 async def async_login(email: str, password: str, websession: ClientSession) -> API:
