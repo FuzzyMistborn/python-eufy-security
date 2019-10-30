@@ -43,7 +43,6 @@ class API:
     async def async_get_history(self) -> dict:
         """Get the camera's history."""
         history_resp = await self.request("post", "event/app/get_all_history_record")
-
         return history_resp["data"]
 
     async def async_update_device_info(self) -> None:
@@ -55,7 +54,6 @@ class API:
                 camera = self.cameras[device_info["device_sn"]]
                 camera.camera_info = device_info
                 continue
-
             self.cameras[device_info["device_sn"]] = Camera(self, device_info)
 
     async def request(
@@ -103,7 +101,6 @@ def _raise_on_error(data: dict) -> None:
     """Raise appropriately when a returned data payload contains an error."""
     if data["code"] == 0:
         return
-
     raise_error(data)
 
 
