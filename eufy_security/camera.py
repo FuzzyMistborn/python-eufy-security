@@ -3,7 +3,7 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .api import API
+    from .api import API  # pylint: disable=cyclic-import
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -35,13 +35,6 @@ class Camera:
     def station_serial(self) -> str:
         """Return the camera's station serial number."""
         return self.camera_info["station_sn"]
-
-    async def async_get_history(self) -> dict:
-        """Get the camera's history."""
-        history_resp = await self._api.request(
-            "post", "event/app/get_all_history_record"
-        )
-        return history_resp["data"]
 
     async def async_start_stream(self) -> str:
         """Start the camera stream and return the RTSP URL."""
