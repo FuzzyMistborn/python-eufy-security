@@ -17,9 +17,24 @@ class Camera:
         self.camera_info: dict = camera_info
 
     @property
+    def hardware_version(self) -> str:
+        """Return the camera's hardware version."""
+        return self.camera_info["main_hw_version"]
+
+    @property
     def last_camera_image_url(self) -> str:
         """Return the URL to the latest camera thumbnail."""
         return self.camera_info["cover_path"]
+
+    @property
+    def mac(self) -> str:
+        """Return the camera MAC address."""
+        return self.camera_info["wifi_mac"]
+
+    @property
+    def model(self) -> str:
+        """Return the camera's model."""
+        return self.camera_info["device_model"]
 
     @property
     def name(self) -> str:
@@ -30,6 +45,11 @@ class Camera:
     def serial(self) -> str:
         """Return the camera serial number."""
         return self.camera_info["device_sn"]
+
+    @property
+    def software_version(self) -> str:
+        """Return the camera's software version."""
+        return self.camera_info["main_sw_version"]
 
     @property
     def station_serial(self) -> str:
