@@ -7,7 +7,7 @@ from aiohttp import ClientSession
 from aiohttp.client_exceptions import ClientError
 
 from .camera import Camera
-from .errors import RequestError, raise_error
+from .errors import InvalidCredentialsError, RequestError, raise_error
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -21,9 +21,10 @@ class API:
         """Initialize."""
         self._email: str = email
         self._password: str = password
+        self._retry_on_401: bool = False
+        self._session: ClientSession = websession
         self._token: Optional[str] = None
         self._token_expiration: Optional[datetime] = None
-        self._session: ClientSession = websession
 
         self.cameras: Dict[str, Camera] = {}
 
@@ -35,6 +36,7 @@ class API:
             json={"email": self._email, "password": self._password},
         )
 
+        self._retry_on_401 = False
         self._token = auth_resp["data"]["auth_token"]
         self._token_expiration = datetime.fromtimestamp(
             auth_resp["data"]["token_expires_at"]
@@ -92,9 +94,18 @@ class API:
 
                 return data
             except ClientError as err:
+                if "401" in str(err):
+                    if self._retry_on_401:
+                        raise InvalidCredentialsError("Token failed multiple times")
+
+                    self._retry_on_401 = True
+                    await self.async_authenticate()
+                    return await self.request(
+                        method, endpoint, headers=headers, json=json
+                    )
                 raise RequestError(
                     f"There was an unknown error while requesting {endpoint}: {err}"
-                )
+                ) from None
 
 
 def _raise_on_error(data: dict) -> None:
