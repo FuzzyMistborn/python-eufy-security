@@ -32,9 +32,13 @@ async def test_properties(
     async with aiohttp.ClientSession(loop=event_loop) as websession:
         api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
         camera = list(api.cameras.values())[0]
+        assert camera.hardware_version == "HAIYI-IMX323"
         assert camera.last_camera_image_url == "https://path/to/image.jpg"
+        assert camera.mac == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        assert camera.model == "T8111"
         assert camera.name == "Driveway"
         assert camera.serial == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx1"
+        assert camera.software_version == "1.9.3"
         assert camera.station_serial == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 
