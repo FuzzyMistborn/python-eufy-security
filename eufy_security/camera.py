@@ -2,6 +2,9 @@
 import logging
 from typing import TYPE_CHECKING
 
+from .params import ParamType
+
+
 if TYPE_CHECKING:
     from .api import API  # pylint: disable=cyclic-import
 
@@ -15,6 +18,21 @@ class Camera:
         """Initialize."""
         self._api = api
         self.camera_info: dict = camera_info
+
+    @property
+    def params(self):
+        # Parse camera info
+        params = {}
+        for param in self.camera_info["params"]:
+            param_type = param["param_type"]
+            value = param["param_value"]
+            try:
+                param_type = ParamType(param_type)
+                value = param_type.read_value(value)
+            except ValueError:
+                pass
+            params[param_type] = value
+        return params
 
     @property
     def hardware_version(self) -> str:
