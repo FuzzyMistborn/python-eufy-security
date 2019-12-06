@@ -103,3 +103,29 @@ class Camera:
     async def async_update(self) -> None:
         """Get the latest values for the camera's properties."""
         await self._api.async_update_device_info()
+
+    async def async_set_params(self, params: dict) -> None:
+        serialized_params = []
+        for param_type, value in params.items():
+            if isinstance(param_type, ParamType):
+                value = param_type.write_value(value)
+                param_type = param_type.value
+            serialized_params.append(
+                {
+                    "param_type": param_type,
+                    "param_value": value
+                })
+        await self._api.request(
+            'post',
+            'app/upload_devs_params',
+            json={
+                "device_sn": self.serial,
+                "station_sn": self.station_serial,
+                "params": serialized_params})
+        await self.async_update()
+
+    async def async_stop_detection(self):
+        await async_set_params({ParamType.DETECT_SWITCH: 0})
+
+    async def async_start_detection(self):
+        await async_set_params({ParamType.DETECT_SWITCH: 1})
