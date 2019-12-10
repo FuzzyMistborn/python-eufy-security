@@ -1,10 +1,15 @@
-import json
-import base64
+"""Define parameters that can be sent to the base station."""
 from enum import Enum
+import base64
+import json
 
 
 class ParamType(Enum):
-    # from com.oceanwing.battery.cam.binder.model.CameraParams
+    """Define the types.
+
+    List retrieved from from com.oceanwing.battery.cam.binder.model.CameraParams
+    """
+
     CHIME_STATE = 2015
     DETECT_EXPOSURE = 2023
     DETECT_MODE = 2004
@@ -43,6 +48,7 @@ class ParamType(Enum):
     PUSH_MSG_MODE = 1252  # 0 to ???
 
     def read_value(self, value):
+        """Read a parameter JSON string."""
         if value:
             if self is ParamType.SNOOZE_MODE:
                 value = base64.b64decode(value, validate=True).decode()
@@ -50,6 +56,7 @@ class ParamType(Enum):
         return None
 
     def write_value(self, value):
+        """Write a parameter JSON string."""
         value = json.dumps(value)
         if self is ParamType.SNOOZE_MODE:
             value = base64.b64encode(value.encode()).decode()

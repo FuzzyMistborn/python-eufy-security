@@ -45,6 +45,23 @@ class Camera:
         return self.camera_info["device_name"]
 
     @property
+    def params(self) -> dict:
+        """Return camera parameters."""
+        params = {}
+        for param in self.camera_info["params"]:
+            param_type = param["param_type"]
+            value = param["param_value"]
+            try:
+                param_type = ParamType(param_type)
+                value = param_type.read_value(value)
+            except ValueError:
+                _LOGGER.warning(
+                    'Unable to process parameter "%s", value "%s"', param_type, value
+                )
+            params[param_type] = value
+        return params
+
+    @property
     def serial(self) -> str:
         """Return the camera serial number."""
         return self.camera_info["device_sn"]
@@ -59,24 +76,8 @@ class Camera:
         """Return the camera's station serial number."""
         return self.camera_info["station_sn"]
 
-    @property
-    def params(self):
-        # Parse camera info
-        params = {}
-        for param in self.camera_info["params"]:
-            param_type = param["param_type"]
-            value = param["param_value"]
-            try:
-                param_type = ParamType(param_type)
-                value = param_type.read_value(value)
-            except ValueError:
-                _LOGGER.warning(
-                    f'Unable to process parameter "{param_type}", ' f'value "{value}"'
-                )
-            params[param_type] = value
-        return params
-
     async def async_set_params(self, params: dict) -> None:
+        """Set camera parameters."""
         serialized_params = []
         for param_type, value in params.items():
             if isinstance(param_type, ParamType):
@@ -95,6 +96,7 @@ class Camera:
         await self.async_update()
 
     async def async_start_detection(self):
+        """Start camera detection."""
         await self.async_set_params({ParamType.DETECT_SWITCH: 1})
 
     async def async_start_stream(self) -> str:
@@ -112,6 +114,7 @@ class Camera:
         return start_resp["data"]["url"]
 
     async def async_stop_detection(self):
+        """Stop camera detection."""
         await self.async_set_params({ParamType.DETECT_SWITCH: 0})
 
     async def async_stop_stream(self) -> None:
