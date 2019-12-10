@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "eufy_security"
+version = "0.2.0"
+description = "A Python library for Eufy Security devices"
+readme = "README.md"
+authors = ["Aaron Bach <bachya1208@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/FuzzyMistborn/python-eufy-security"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+
+[tool.poetry.dependencies]
+aiohttp = "^3.6.2"
+python = "^3.6.1"
+
+[tool.poetry.dev-dependencies]
+Sphinx = "^2.2.1"
+aresponses = "^1.1.1"
+black = "^19.10b0"
+docformatter = "^1.3"
+flake8 = "^3.7.9"
+mypy = "^0.740"
+pre-commit = "^1.20.0"
+pylint = "^2.4.3"
+pytest-aiohttp = "^0.3.0"
+pytest-cov = "^2.8.1"
+
+[build-system]
+requires = ["setuptools >= 35.0.2", "wheel >= 0.29.0", "poetry>=0.12"]
+build-backend = "poetry.masonry.api"

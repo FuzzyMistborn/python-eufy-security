@@ -1,21 +1,28 @@
 clean:
-	pipenv --rm
+	.venv/bin/pre-commit uninstall
+	rm -rf .venv/
 coverage:
-	pipenv run py.test -s --verbose --cov-report term-missing --cov-report xml --cov=eufy_security tests
+	.venv/bin/py.test -s --verbose --cov-report term-missing --cov-report xml --cov=eufy_security tests
+format:
+	.venv/bin/black eufy_security
+	.venv/bin/black tests
+	.venv/bin/docformatter -ir eufy_security
 init:
-	pip3 install --upgrade pip pipenv
-	pipenv lock
-	pipenv install --three --dev
-	pipenv run pre-commit install
+	python3 -m venv .venv
+	.venv/bin/pip3 install poetry
+	.venv/bin/poetry lock
+	.venv/bin/poetry install
+	.venv/bin/pre-commit install
 lint:
-	pipenv run flake8 eufy_security
-	pipenv run pydocstyle eufy_security
-	pipenv run pylint eufy_security
+	.venv/bin/black --check --fast eufy_security
+	.venv/bin/flake8 eufy_security
+	.venv/bin/docformatter -r -c eufy_security
+	.venv/bin/pylint eufy_security
 publish:
-	pipenv run python setup.py sdist bdist_wheel
-	pipenv run twine upload dist/*
-	rm -rf dist/ build/ .egg eufy_security.egg-info/
+	.venv/bin/poetry build
+	.venv/bin/poetry publish
+	rm -rf dist/ build/ .egg *.egg-info/
 test:
-	pipenv run py.test
+	.venv/bin/py.test
 typing:
-	pipenv run mypy --ignore-missing-imports eufy_security
+	.venv/bin/mypy --ignore-missing-imports eufy_security

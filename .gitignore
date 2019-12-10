@@ -1,6 +1,8 @@
-tags
-Pipfile.lock
+*.egg-info
 .coverage
 .mypy_cache/
+.venv
 coverage.xml
-*.egg-info
+poetry.lock
+tags
+__pycache__
