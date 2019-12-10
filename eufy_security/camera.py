@@ -98,7 +98,7 @@ class Camera:
         await self.async_update()
 
     async def async_start_detection(self):
-        await async_set_params({ParamType.DETECT_SWITCH: 1})
+        await self.async_set_params({ParamType.DETECT_SWITCH: 1})
 
     async def async_start_stream(self) -> str:
         """Start the camera stream and return the RTSP URL."""
@@ -115,7 +115,7 @@ class Camera:
         return start_resp["data"]["url"]
 
     async def async_stop_detection(self):
-        await async_set_params({ParamType.DETECT_SWITCH: 0})
+        await self.async_set_params({ParamType.DETECT_SWITCH: 0})
 
     async def async_stop_stream(self) -> None:
         """Stop the camera stream."""
