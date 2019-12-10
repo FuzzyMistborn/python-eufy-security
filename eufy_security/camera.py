@@ -71,8 +71,7 @@ class Camera:
                 value = param_type.read_value(value)
             except ValueError:
                 _LOGGER.warning(
-                    f'Unable to process parameter "{param_type}", '
-                    f'value "{value}"'
+                    f'Unable to process parameter "{param_type}", ' f'value "{value}"'
                 )
             params[param_type] = value
         return params
@@ -83,9 +82,7 @@ class Camera:
             if isinstance(param_type, ParamType):
                 value = param_type.write_value(value)
                 param_type = param_type.value
-            serialized_params.append(
-                {"param_type": param_type, "param_value": value}
-            )
+            serialized_params.append({"param_type": param_type, "param_value": value})
         await self._api.request(
             "post",
             "app/upload_devs_params",

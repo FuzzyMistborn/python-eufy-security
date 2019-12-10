@@ -17,9 +17,7 @@ API_BASE: str = "https://mysecurity.eufylife.com/api/v1"
 class API:
     """Define the API object."""
 
-    def __init__(
-        self, email: str, password: str, websession: ClientSession
-    ) -> None:
+    def __init__(self, email: str, password: str, websession: ClientSession) -> None:
         """Initialize."""
         self._email: str = email
         self._password: str = password
@@ -46,9 +44,7 @@ class API:
 
     async def async_get_history(self) -> dict:
         """Get the camera's history."""
-        history_resp = await self.request(
-            "post", "event/app/get_all_history_record"
-        )
+        history_resp = await self.request("post", "event/app/get_all_history_record")
         return history_resp["data"]
 
     async def async_update_device_info(self) -> None:
@@ -92,9 +88,7 @@ class API:
                 data: dict = await resp.json(content_type=None)
 
                 if not data:
-                    raise RequestError(
-                        f"No response while requesting {endpoint}"
-                    )
+                    raise RequestError(f"No response while requesting {endpoint}")
 
                 _raise_on_error(data)
 
@@ -102,9 +96,7 @@ class API:
             except ClientError as err:
                 if "401" in str(err):
                     if self._retry_on_401:
-                        raise InvalidCredentialsError(
-                            "Token failed multiple times"
-                        )
+                        raise InvalidCredentialsError("Token failed multiple times")
 
                     self._retry_on_401 = True
                     await self.async_authenticate()
@@ -123,9 +115,7 @@ def _raise_on_error(data: dict) -> None:
     raise_error(data)
 
 
-async def async_login(
-    email: str, password: str, websession: ClientSession
-) -> API:
+async def async_login(email: str, password: str, websession: ClientSession) -> API:
     """Return an authenticated API object."""
     api: API = API(email, password, websession)
     await api.async_authenticate()
