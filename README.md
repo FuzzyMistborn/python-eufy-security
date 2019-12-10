@@ -85,8 +85,11 @@ signatures and more examples.
   or [initiate a discussion on one](https://github.com/FuzzyMistborn/python-eufy-security/issues/new).
 2. [Fork the repository](https://github.com/FuzzyMistborn/python-eufy-security/fork).
 3. Install the dev environment: `make init`.
-4. Enter the virtual environment: `pipenv shell`
+4. Enter the virtual environment: `source ./venv/bin/activate`
 5. Code your new feature or bug fix.
 6. Write a test that covers your new functionality.
-7. Run tests and ensure 100% code coverage: `make coverage`
-8. Submit a pull request!
+7. Update `README.md` with any new documentation.
+8. Run tests and ensure 100% code coverage: `make coverage`
+9. Ensure you have no linting errors: `make lint`
+10. Ensure you have typed your code correctly: `make typing`
+11. Submit a pull request!
