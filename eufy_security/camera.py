@@ -20,24 +20,6 @@ class Camera:
         self.camera_info: dict = camera_info
 
     @property
-    def params(self):
-        # Parse camera info
-        params = {}
-        for param in self.camera_info["params"]:
-            param_type = param["param_type"]
-            value = param["param_value"]
-            try:
-                param_type = ParamType(param_type)
-                value = param_type.read_value(value)
-            except ValueError:
-                _LOGGER.warning(
-                    f"Unable to process parameter \"{param_type}\", "
-                    f"value \"{value}\""
-                )
-            params[param_type] = value
-        return params
-
-    @property
     def hardware_version(self) -> str:
         """Return the camera's hardware version."""
         return self.camera_info["main_hw_version"]
@@ -77,35 +59,23 @@ class Camera:
         """Return the camera's station serial number."""
         return self.camera_info["station_sn"]
 
-    async def async_start_stream(self) -> str:
-        """Start the camera stream and return the RTSP URL."""
-        start_resp = await self._api.request(
-            "post",
-            "web/equipment/start_stream",
-            json={
-                "device_sn": self.serial,
-                "station_sn": self.station_serial,
-                "proto": 2,
-            },
-        )
-
-        return start_resp["data"]["url"]
-
-    async def async_stop_stream(self) -> None:
-        """Stop the camera stream."""
-        await self._api.request(
-            "post",
-            "web/equipment/stop_stream",
-            json={
-                "device_sn": self.serial,
-                "station_sn": self.station_serial,
-                "proto": 2,
-            },
-        )
-
-    async def async_update(self) -> None:
-        """Get the latest values for the camera's properties."""
-        await self._api.async_update_device_info()
+    @property
+    def params(self):
+        # Parse camera info
+        params = {}
+        for param in self.camera_info["params"]:
+            param_type = param["param_type"]
+            value = param["param_value"]
+            try:
+                param_type = ParamType(param_type)
+                value = param_type.read_value(value)
+            except ValueError:
+                _LOGGER.warning(
+                    f"Unable to process parameter \"{param_type}\", "
+                    f"value \"{value}\""
+                )
+            params[param_type] = value
+        return params
 
     async def async_set_params(self, params: dict) -> None:
         serialized_params = []
@@ -127,8 +97,38 @@ class Camera:
                 "params": serialized_params})
         await self.async_update()
 
+    async def async_start_detection(self):
+        await async_set_params({ParamType.DETECT_SWITCH: 1})
+
+    async def async_start_stream(self) -> str:
+        """Start the camera stream and return the RTSP URL."""
+        start_resp = await self._api.request(
+            "post",
+            "web/equipment/start_stream",
+            json={
+                "device_sn": self.serial,
+                "station_sn": self.station_serial,
+                "proto": 2,
+            },
+        )
+
+        return start_resp["data"]["url"]
+
     async def async_stop_detection(self):
         await async_set_params({ParamType.DETECT_SWITCH: 0})
 
-    async def async_start_detection(self):
-        await async_set_params({ParamType.DETECT_SWITCH: 1})
+    async def async_stop_stream(self) -> None:
+        """Stop the camera stream."""
+        await self._api.request(
+            "post",
+            "web/equipment/stop_stream",
+            json={
+                "device_sn": self.serial,
+                "station_sn": self.station_serial,
+                "proto": 2,
+            },
+        )
+
+    async def async_update(self) -> None:
+        """Get the latest values for the camera's properties."""
+        await self._api.async_update_device_info()
