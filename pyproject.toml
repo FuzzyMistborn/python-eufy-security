@@ -1,11 +1,14 @@
 [tool.poetry]
-name = "eufy_security"
+name = "python-eufy-security"
 version = "0.2.0"
 description = "A Python library for Eufy Security devices"
 readme = "README.md"
 authors = ["Aaron Bach <bachya1208@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/FuzzyMistborn/python-eufy-security"
+packages = [
+    { include = "eufy_security" },
+]
 classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
