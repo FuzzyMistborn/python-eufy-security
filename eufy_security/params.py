@@ -34,8 +34,8 @@ class ParamType(Enum):
     VOLUME = 2003
 
     # Inferred from source
-    SNOOZE_MODE = 1271    # The value is base64 encoded
-    WATERMARK_MODE = 1214 # 1 - hide, 2 - show
+    SNOOZE_MODE = 1271  # The value is base64 encoded
+    WATERMARK_MODE = 1214  # 1 - hide, 2 - show
     DEVICE_UPGRADE_NOW = 1134
     CAMERA_UPGRADE_NOW = 1133
 
@@ -54,4 +54,3 @@ class ParamType(Enum):
         if self is ParamType.SNOOZE_MODE:
             value = base64.b64encode(value.encode()).decode()
         return value
-
