@@ -30,7 +30,10 @@ class Camera:
                 param_type = ParamType(param_type)
                 value = param_type.read_value(value)
             except ValueError:
-                pass
+                _LOGGER.warning(
+                    f"Unable to process parameter \"{param_type}\", "
+                    f"value \"{value}\""
+                )
             params[param_type] = value
         return params
 
