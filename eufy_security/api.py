@@ -19,6 +19,7 @@ class API:
 
     def __init__(self, email: str, password: str, websession: ClientSession) -> None:
         """Initialize."""
+        self._api_base: str = API_BASE
         self._email: str = email
         self._password: str = password
         self._retry_on_401: bool = False
@@ -41,6 +42,9 @@ class API:
         self._token_expiration = datetime.fromtimestamp(
             auth_resp["data"]["token_expires_at"]
         )
+        domain = auth_resp["data"].get("domain")
+        if domain:
+            self._api_base = f"https://{domain}/api/v1"
 
     async def async_get_history(self) -> dict:
         """Get the camera's history."""
@@ -76,7 +80,7 @@ class API:
             self._token_expiration = None
             await self.async_authenticate()
 
-        url: str = f"{API_BASE}/{endpoint}"
+        url: str = f"{self._api_base}/{endpoint}"
 
         if not headers:
             headers = {}
