@@ -5,7 +5,6 @@
 [![Version](https://img.shields.io/pypi/pyversions/python-eufy-security.svg)](https://pypi.python.org/pypi/python-eufy-security)
 [![License](https://img.shields.io/pypi/l/python-eufy-security.svg)](https://github.com/fuzzymistborn/python-eufy-security/blob/master/LICENSE)
 [![Code Coverage](https://codecov.io/gh/fuzzymistborn/python-eufy-security/branch/master/graph/badge.svg)](https://codecov.io/gh/fuzzymistborn/python-eufy-security)
-[![Maintainability](https://api.codeclimate.com/v1/badges/f46d8b1dcfde6a2f683d/maintainability)](https://codeclimate.com/github/fuzzymistborn/python-eufy-security/maintainability)
 [![Say Thanks](https://img.shields.io/badge/SayThanks-!-1EAEDB.svg)](https://saythanks.io/to/fuzzymistborn)
 
 This is an experimental Python library for Eufy Security devices (cameras, doorbells, 
