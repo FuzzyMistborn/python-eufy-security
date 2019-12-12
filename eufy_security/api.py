@@ -44,7 +44,8 @@ class API:
         )
         domain = auth_resp["data"].get("domain")
         if domain:
-            self._api_base = f"https://{domain}/api/v1"
+            self._api_base = f"https://{domain}/v1"
+            _LOGGER.info(f"Switching to another API_BASE: {self._api_base}")
 
     async def async_get_history(self) -> dict:
         """Get the camera's history."""
