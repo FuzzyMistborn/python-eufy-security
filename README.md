@@ -12,7 +12,9 @@ The library is currently supported on
 
 # Installation
 
-TBD
+```bash
+pip install python-eufy-security
+```
 
 # Account Information
 
