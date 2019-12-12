@@ -23,8 +23,8 @@ async def test_properties(
         aresponses.Response(text=json.dumps(login_success_json), status=200),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/app/get_devs_list",
+        "security-app.eufylife.com",
+        "/v1/app/get_devs_list",
         "post",
         aresponses.Response(text=json.dumps(devices_list_json), status=200),
     )
@@ -54,14 +54,14 @@ async def test_start_stream(
         aresponses.Response(text=json.dumps(login_success_json), status=200),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/app/get_devs_list",
+        "security-app.eufylife.com",
+        "/v1/app/get_devs_list",
         "post",
         aresponses.Response(text=json.dumps(devices_list_json), status=200),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/web/equipment/start_stream",
+        "security-app.eufylife.com",
+        "/v1/web/equipment/start_stream",
         "post",
         aresponses.Response(text=json.dumps(start_stream_json), status=200),
     )
@@ -85,14 +85,14 @@ async def test_stop_stream(
         aresponses.Response(text=json.dumps(login_success_json), status=200),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/app/get_devs_list",
+        "security-app.eufylife.com",
+        "/v1/app/get_devs_list",
         "post",
         aresponses.Response(text=json.dumps(devices_list_json), status=200),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/web/equipment/stop_stream",
+        "security-app.eufylife.com",
+        "/v1/web/equipment/stop_stream",
         "post",
         aresponses.Response(text=json.dumps(stop_stream_json), status=200),
     )
@@ -113,14 +113,14 @@ async def test_update(aresponses, devices_list_json, event_loop, login_success_j
         aresponses.Response(text=json.dumps(login_success_json), status=200),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/app/get_devs_list",
+        "security-app.eufylife.com",
+        "/v1/app/get_devs_list",
         "post",
         aresponses.Response(text=json.dumps(devices_list_json), status=200),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/app/get_devs_list",
+        "security-app.eufylife.com",
+        "/v1/app/get_devs_list",
         "post",
         aresponses.Response(text=json.dumps(devices_list_json), status=200),
     )
