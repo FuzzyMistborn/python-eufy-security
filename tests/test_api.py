@@ -31,14 +31,14 @@ async def test_401_refresh_failure(
         aresponses.Response(text=json.dumps(login_success_json), status=200),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/app/get_devs_list",
+        "security-app.eufylife.com",
+        "/v1/app/get_devs_list",
         "post",
         aresponses.Response(text=None, status=401),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/passport/login",
+        "security-app.eufylife.com",
+        "/v1/passport/login",
         "post",
         aresponses.Response(text=None, status=401),
     )
@@ -60,20 +60,20 @@ async def test_401_refresh_success(
         aresponses.Response(text=json.dumps(login_success_json), status=200),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/app/get_devs_list",
+        "security-app.eufylife.com",
+        "/v1/app/get_devs_list",
         "post",
         aresponses.Response(text=json.dumps(devices_list_json), status=401),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/passport/login",
+        "security-app.eufylife.com",
+        "/v1/passport/login",
         "post",
         aresponses.Response(text=json.dumps(login_success_json), status=200),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/app/get_devs_list",
+        "security-app.eufylife.com",
+        "/v1/app/get_devs_list",
         "post",
         aresponses.Response(text=json.dumps(devices_list_json), status=200),
     )
@@ -125,10 +125,10 @@ async def test_empty_response(
         aresponses.Response(text=json.dumps(login_success_json), status=200),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/app/get_devs_list",
+        "security-app.eufylife.com",
+        "/v1/app/get_devs_list",
         "post",
-        aresponses.Response(text=None, status=200),
+        aresponses.Response(text=empty_response, status=200),
     )
 
     async with aiohttp.ClientSession(loop=event_loop) as websession:
@@ -148,20 +148,20 @@ async def test_expired_access_token(
         aresponses.Response(text=json.dumps(login_success_json), status=200),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/app/get_devs_list",
+        "security-app.eufylife.com",
+        "/v1/app/get_devs_list",
         "post",
         aresponses.Response(text=json.dumps(devices_list_json), status=200),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/passport/login",
+        "security-app.eufylife.com",
+        "/v1/passport/login",
         "post",
         aresponses.Response(text=json.dumps(login_success_json), status=200),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/app/get_devs_list",
+        "security-app.eufylife.com",
+        "/v1/app/get_devs_list",
         "post",
         aresponses.Response(text=json.dumps(devices_list_json), status=200),
     )
@@ -177,7 +177,6 @@ async def test_expired_access_token(
 async def test_get_history(
     aresponses, devices_list_json, event_loop, history_json, login_success_json
 ):
-    """Test a successful login and API object creation."""
     aresponses.add(
         "mysecurity.eufylife.com",
         "/api/v1/passport/login",
@@ -185,14 +184,14 @@ async def test_get_history(
         aresponses.Response(text=json.dumps(login_success_json), status=200),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/app/get_devs_list",
+        "security-app.eufylife.com",
+        "/v1/app/get_devs_list",
         "post",
         aresponses.Response(text=json.dumps(devices_list_json), status=200),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/event/app/get_all_history_record",
+        "security-app.eufylife.com",
+        "/v1/event/app/get_all_history_record",
         "post",
         aresponses.Response(text=json.dumps(history_json), status=200),
     )
@@ -230,8 +229,8 @@ async def test_login_success(
         aresponses.Response(text=json.dumps(login_success_json), status=200),
     )
     aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/app/get_devs_list",
+        "security-app.eufylife.com",
+        "/v1/app/get_devs_list",
         "post",
         aresponses.Response(text=json.dumps(devices_list_json), status=200),
     )

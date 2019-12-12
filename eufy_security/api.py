@@ -14,7 +14,7 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 API_BASE: str = "https://mysecurity.eufylife.com/api/v1"
 
 
-class API:
+class API:  # pylint: disable=too-many-instance-attributes
     """Define the API object."""
 
     def __init__(self, email: str, password: str, websession: ClientSession) -> None:
@@ -45,7 +45,7 @@ class API:
         domain = auth_resp["data"].get("domain")
         if domain:
             self._api_base = f"https://{domain}/v1"
-            _LOGGER.info(f"Switching to another API_BASE: {self._api_base}")
+            _LOGGER.info("Switching to another API_BASE: %s", self._api_base)
 
     async def async_get_history(self) -> dict:
         """Get the camera's history."""
