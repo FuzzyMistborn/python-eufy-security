@@ -1,0 +1,70 @@
+---
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - dev
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.6"
+          - "3.7"
+          - "3.8"
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+      - name: pytest
+        run: |
+          pip install poetry
+          poetry install
+          poetry run py.test
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: "3.x"
+          architecture: x64
+      - name: setup
+        run: |
+          pip install poetry
+          poetry install
+      - name: lint
+        run: |
+          poetry run black --check --fast eufy_security
+          poetry run flake8 eufy_security
+          poetry run docformatter -cr eufy_security
+          poetry run pylint eufy_security
+      - name: typing
+        run: |
+          poetry run mypy --ignore-missing-imports eufy_security
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: "3.x"
+          architecture: x64
+      - run: |
+          pip install poetry
+          poetry install
+      - run: |
+          poetry run py.test -s --verbose --cov-report term-missing --cov-report xml --cov=eufy_security tests
+      - uses: codecov/codecov-action@v1.0.3
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
