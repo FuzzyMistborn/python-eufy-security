@@ -51,6 +51,9 @@ class API:
         """Get the latest device info."""
         devices_resp = await self.request("post", "app/get_devs_list")
 
+        if not devices_resp.get("data"):
+            return
+
         for device_info in devices_resp["data"]:
             if device_info["device_sn"] in self.cameras:
                 camera = self.cameras[device_info["device_sn"]]
