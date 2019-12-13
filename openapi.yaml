@@ -692,8 +692,44 @@ paths:
       responses:
         'default':
           description: 'Ok'
-    
-
+  /app/cipher/get_ciphers:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                cipher_ids:
+                  type: array
+                  items:
+                    type: integer
+              required:
+                - user_id
+                - cipher_ids
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            cipher_id:
+                              type: integer
+                            user_id:
+                              type: string
+                            private_key:
+                              type: string
 
 security:
   - TokenAuth: []
