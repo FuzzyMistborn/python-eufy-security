@@ -1,0 +1,1185 @@
+openapi: 3.0.0
+info:
+  title: EufySecurity
+  description: This is a documentation of EufySecurity API
+  version: 0.1.0
+  contact:
+    email: nonsleepr@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: https://mysecurity.eufylife.com/api/v1
+    description: WebApp
+  - url: https://security-app.eufylife.com/v1
+    description: Android entrypoint (US)
+  - url: https://security-app-eu.eufylife.com/v1
+    description: Android entrypoint for EU
+  - url: https://security-app-pr.eufylife.com/v1
+    description: Android entrypoint for PR
+  - url: https://security-app-ci.eufylife.com/v1
+    description: Continuous Integration?
+  - url: https://security-app-qa.eufylife.com/v1
+    description: Quality Assurance?
+  - url: https://security-app-sqa.eufylife.com/v1
+    description: Short Quality Assurance?
+
+paths:
+  /passport/login:
+    post:
+      summary: Login to EufySecurity
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: my@email.com
+                password:
+                  type: string
+                  example: cGFzc3dvcmQK
+                enc:
+                  type: integer
+                  example: 2
+                  description: >
+                    Password encoding:
+                      * `2` - base64
+                      * any other value - plain
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - type: object
+                          - $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Response'
+  /app/get_hub_list:
+    post:
+      summary: Get the list of the hubs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_sn:
+                  type: string
+                  example: ''
+                num:
+                  type: integer
+                  example: 100
+                page:
+                  type: integer
+                  example: 0
+                station_sn:
+                  type: string
+                  example: ''
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - type: array
+                            items:
+                              $ref: '#/components/schemas/Hub'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Response'
+  /app/get_devs_list:
+    post:
+      summary: Get the list of the devices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_sn:
+                  type: string
+                  example: ''
+                num:
+                  type: integer
+                  example: 100
+                page:
+                  type: integer
+                  example: 0
+                station_sn:
+                  type: string
+                  example: ''
+                orderby:
+                  type: string
+                  example: ''
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - type: array
+                            items:
+                              $ref: '#/components/schemas/ExtendedDevice'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Response'
+  /event/app/get_all_history_record:
+    post:
+      summary: Get history records
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_sn:
+                  type: string
+                  example: ''
+                start_time:
+                  type: integer
+                  example: 0
+                end_time:
+                  type: integer
+                  example: 0
+                offset:
+                  type: integer
+                  example: -18000
+                id:
+                  type: integer
+                  example: 0
+                num:
+                  type: integer
+                  example: 100
+                pullup:
+                  type: integer
+                  example: true
+                shared:
+                  type: integer
+                  example: true
+                storage:
+                  type: integer
+                  example: 0
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - type: array
+                            items:
+                              $ref: '#/components/schemas/Record'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Response'
+  /event/app/get_history_by_time:
+    post:
+      summary: Get history records (stored in the cloud?)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_sn:
+                  type: string
+                  example: ''
+                start_time:
+                  type: integer
+                  example: 0
+                end_time:
+                  type: integer
+                  example: 0
+                offset:
+                  type: integer
+                  example: -18000
+                storage:
+                  type: integer
+                  example: 2
+                  description: >
+                    Storage type:
+                      * `2` - this is what WebApp sends
+                      * any other number - returns results
+                station_sn:
+                  type: string
+                  example: ''
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - type: array
+                            items:
+                              type: object
+                              properties:
+                                date:
+                                  type: integer
+                                  description: Timestamp
+                                unviewed:
+                                  type: boolean
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Response'
+
+  /passport/estimate_domain:
+    post:
+      summary: AndroidApp - Login to EufySecurity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ab:
+                  type: string
+                  example: "US"
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Domain:
+                    type: string
+                    example: security-app.eufylife.com
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Response'
+  /app/upload_devs_params:
+    post:
+      summary: AndroidApp - Set Device Parameters (Used to set doorbell params)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_sn:
+                  type: string
+                station_sn:
+                  type: string
+                params:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DeviceParam'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Domain:
+                    type: string
+                    example: security-app.eufylife.com
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Response'
+  /app/upload_hub_params:
+    post:
+      summary: AndroidApp - Set Hub Parameters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_sn:
+                  type: string
+                station_sn:
+                  type: string
+                params:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DeviceParam'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Domain:
+                    type: string
+                    example: security-app.eufylife.com
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Response'
+
+  /voice/response/lists/{device_sn}:
+    get:
+      summary: AndroidApp - List voice responses
+      parameters:
+        - in: path
+          required: true
+          name: device_sn
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                # TODO
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Response'
+  /voice/response/create:
+    post:
+      summary: AndroidApp - Create voice response
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              # TODO
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Response'
+  /voice/response/update:
+    post:
+      summary: AndroidApp - Update voice response
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              # TODO
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Response'
+  /hub/get_p2p_connectinfo:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                station_sn:
+                  type: string
+              required:
+                - station_sn
+      responses:
+        'default':
+          description: 'Ok'
+  /hub/check_device:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                station_sn:
+                  type: string
+                device_sn:
+                  type: string
+              required:
+                - station_sn
+                - device_sn
+      responses:
+        'default':
+          description: 'Ok'
+  /hub/get_dev_info:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                station_sn:
+                  type: string
+                device_sn:
+                  type: string
+                account:
+                  type: string
+                  description: "`user_id` from `/passport/login`"
+              required:
+                - station_sn
+                - device_sn
+                - account
+      responses:
+        'default':
+          description: 'Ok'
+  /hub/get_devs_params:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                station_sn:
+                  type: string
+                device_sn:
+                  type: string
+                account:
+                  type: string
+                  description: "`user_id` from `/passport/login`"
+              required:
+                - station_sn
+                - device_sn
+                - account
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DeviceParam'
+  /hub/get_rtsp_connectinfo:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                station_sn:
+                  type: string
+                device_sn:
+                  type: string
+              required:
+                - station_sn
+                - device_sn
+      responses:
+        'default':
+          description: 'Ok'
+  /hub/reset:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                station_sn:
+                  type: string
+                account:
+                  type: string
+                  description: "`user_id` from `/passport/login`"
+              required:
+                - station_sn
+                - account
+      responses:
+        'default':
+          description: 'Ok'
+  /hub/aiassis/add_stranger:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                station_sn:
+                  type: string
+                account:
+                  type: string
+                  description: "`user_id` from `/passport/login`"
+              required:
+                - station_sn
+                - account
+      responses:
+        'default':
+          description: 'Ok'
+  /hub/aiassis/delete_faces:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                station_sn:
+                  type: string
+                account:
+                  type: string
+                  description: "`user_id` from `/passport/login`"
+              required:
+                - station_sn
+                - account
+      responses:
+        'default':
+          description: 'Ok'
+
+  /event/app/favorite:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                monitor_id:
+                  type: integer
+              required:
+                - monitor_id
+      responses:
+        'default':
+          description: 'Ok'
+  /event/app/unfavorite:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                monitor_id:
+                  type: integer
+              required:
+                - monitor_id
+      responses:
+        'default':
+          description: 'Ok'
+  /event/app/viewed:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                monitor_id:
+                  type: integer
+              required:
+                - monitor_id
+      responses:
+        'default':
+          description: 'Ok'
+  /event/app/delete_record:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                monitor_id:
+                  type: integer
+              required:
+                - monitor_id
+      responses:
+        'default':
+          description: 'Ok'
+
+  /hub/ota/get_rom_version:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sn:
+                  type: string
+                device_type:
+                  type: string
+                rom_version:
+                  type: integer
+                current_version_name:
+                  type: string
+              required:
+                - sn
+                - device_type
+      responses:
+        'default':
+          description: 'Ok'
+  /app/cipher/get_ciphers:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                cipher_ids:
+                  type: array
+                  items:
+                    type: integer
+              required:
+                - user_id
+                - cipher_ids
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            cipher_id:
+                              type: integer
+                            user_id:
+                              type: string
+                            private_key:
+                              type: string
+
+security:
+  - TokenAuth: []
+
+components:
+  securitySchemes:
+    TokenAuth:
+      type: apiKey
+      in: header
+      name: X-Auth-Token
+  schemas:
+    Response:
+      properties:
+        code:
+          type: integer
+          example: 0
+          description: >
+            Response status code:
+              * `0` - Success
+              * `10003` - Failed to request
+        msg:
+          type: string
+          example: Succeed.
+          description: Explanation of the status code
+        data:
+          description: Payload
+      required:
+        - code
+        - msg
+    401Response:
+      properties:
+        banned:
+          type: integer
+    LoginResponse:
+      properties:
+        user_id:
+          type: string
+        email:
+          type: string
+        nick_name:
+          type: string
+        auth_token:
+          type: string
+          description: The token used in further communications
+        token_expires_at:
+          type: integer
+        avatar:
+          type: string
+        invitation_code:
+          type: string
+        inviter_code:
+          type: string
+        mac_addr:
+          type: string
+        domain:
+          type: string
+          description: Should be used for further communications
+        ab_code:
+          type: string
+        geo_key:
+          type: string
+        privilege:
+          type: integer
+        params:
+          type: object
+    Hub:
+      properties:
+        station_id:
+          type: integer
+        station_sn:
+          type: string
+        station_name:
+          type: string
+        station_model:
+          type: string
+        time_zone:
+          type: string
+        wifi_ssid:
+          type: string
+        ip_addr:
+          type: string
+        wifi_mac:
+          type: string
+        main_sw_version:
+          type: string
+        main_hw_version:
+          type: string
+        sec_sw_version:
+          type: string
+        sec_hw_version:
+          type: string
+        volume:
+          type: string
+        main_sw_time:
+          type: integer
+        bt_mac:
+          type: string
+        device_type:
+          type: integer
+        event_num:
+          type: integer
+        create_time:
+          type: integer
+        update_time:
+          type: integer
+        status:
+          type: integer
+        station_status:
+          type: integer
+        status_change_time:
+          type: integer
+        p2p_did:
+          type: string
+        push_did:
+          type: string
+        p2p_license:
+          type: string
+        push_license:
+          type: string
+        ndt_did:
+          type: string
+        ndt_license:
+          type: string
+        p2p_conn:
+          type: string
+        app_conn:
+          type: string
+        wipn_enc_dec_key:
+          type: string
+        wipn_ndt_aes128key:
+          type: string
+        query_server_did:
+          type: string
+        prefix:
+          type: string
+        member:
+          $ref: '#/components/schemas/Member'
+        params:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceParam'
+        devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/Device'
+    Device:
+      properties:
+        device_id:
+          type: integer
+        device_sn:
+          type: string
+        device_name:
+          type: string
+        device_model:
+          type: string
+        time_zone:
+          type: string
+        device_type:
+          type: integer
+        device_channel:
+          type: integer
+        station_sn:
+          type: string
+        schedule:
+          type: string
+        schedulex:
+          type: string
+        wifi_mac:
+          type: string
+        main_sw_version:
+          type: string
+        main_hw_version:
+          type: string
+        sec_sw_version:
+          type: string
+        sec_hw_version:
+          type: string
+        sector_id:
+          type: integer
+        event_num:
+          type: integer
+        wifi_ssid:
+          type: string
+        ip_addr:
+          type: string
+        volume:
+          type: string
+        main_sw_time:
+          type: integer
+        bind_time:
+          type: integer
+        bt_mac:
+          type: string
+        cover_path:
+          type: string
+        cover_time:
+          type: integer
+        local_ip:
+          type: string
+        language:
+          type: string
+        create_time:
+          type: integer
+        update_time:
+          type: integer
+        status:
+          type: integer
+    ExtendedDevice:
+      allOf:
+        - $ref: '#/components/schemas/Device'
+        - type: object
+          properties:
+            svr_domain:
+              type: string
+            svr_port:
+              type: integer
+            station_conn:
+              $ref: '#/components/schemas/Connection'
+            family_num:
+              type: integer
+            member:
+              $ref: '#/components/schemas/Member'
+            permission:
+              type: object
+            params:
+              type: array
+              items:
+                $ref: '#/components/schemas/DeviceParam'
+            pir_total:
+              type: integer
+            pir_none:
+              type: integer
+            week_pir_total:
+              type: integer
+            week_pir_none:
+              type: integer
+            month_pir_total:
+              type: integer
+            month_pir_none:
+              type: integer
+    DeviceParam:
+      properties:
+        param_id:
+          type: integer
+        station_sn:
+          type: string
+        param_type:
+          $ref: '#/components/schemas/ParamType'
+        param_value:
+          type: string
+        create_time:
+          type: integer
+        update_time:
+          type: integer
+        status:
+          type: integer
+      required:
+        - param_type
+        - param_value
+    ParamType:
+      type: integer
+      description: >
+        Parameter type:
+          * `1133` - camera upgrade now
+          * `1134` - device upgrade now
+          * `1140` - ???
+          * `1214` - watermark mode
+          * `1224` - guard mode (TODO: Add to the parser)
+          * `1253` - ???
+          * `1271` - snooze mode
+          * `2001` - open device
+          * `2002` - night visual
+          * `2003` - volume
+          * `2004` - detect mode
+          * `2005` - detect motion sensitive
+          * `2006` - detect zone
+          * `2007` - un detect zone
+          * `2010` - sdcard
+          * `2015` - chime state
+          * `2022` - ringing volume
+          * `2023` - detect exposure
+          * `2027` - detect switch
+          * `2028` - detect scenario
+          * `2029` - doorbell hdr
+          * `2030` - doorbell ir mode
+          * `2031` - doorbell video quality
+          * `2032` - doorbell brightness
+          * `2033` - doorbell distortion
+          * `2034` - doorbell record quality
+          * `2035` - doorbell motion notification
+          * `2036` - doorbell notification open
+          * `2037` - doorbell snooze start time
+          * `2038` - doorbell notification jump mode
+          * `2039` - doorbell led night mode
+          * `2040` - doorbell ring record
+          * `2041` - doorbell motion advance option
+          * `2042` - doorbell audio recode
+    Member:
+      properties:
+        family_id:
+          type: integer
+        station_sn:
+          type: string
+        admin_user_id:
+          type: string
+        member_user_id:
+          type: string
+        member_type:
+          type: integer
+        permissions:
+          type: integer
+        member_nick:
+          type: string
+        action_user_id:
+          type: string
+        fence_state:
+          type: integer
+        create_time:
+          type: integer
+        update_time:
+          type: integer
+        status:
+          type: integer
+        email:
+          type: string
+        nick_name:
+          type: string
+        avatar:
+          type: string
+        action_user_name:
+          type: string
+    Connection:
+      # TODO: Reuse in Hub
+      properties:
+        station_sn:
+          type: string
+        station_name:
+          type: string
+        station_model:
+          type: string
+        main_sw_version:
+          type: string
+        main_hw_version:
+          type: string
+        p2p_did:
+          type: string
+        push_did:
+          type: string
+        ndt_did:
+          type: string
+        p2p_conn:
+          type: string
+        app_conn:
+          type: string
+        binded:
+          type: boolean
+        setup_code:
+          type: string
+        setup_id:
+          type: string
+    Record:
+      properties:
+        monitor_id:
+          type: integer
+        station_sn:
+          type: string
+        device_sn:
+          type: string
+        storage_type:
+          type: integer
+        storage_path:
+          type: string
+        hevc_storage_path:
+          type: string
+        cloud_path:
+          type: string
+        frame_num:
+          type: integer
+        thumb_path:
+          type: string
+        thumb_data:
+          type: string
+        start_time:
+          type: integer
+        end_time:
+          type: integer
+        cipher_id:
+          type: integer
+        cipher_user_id:
+          type: string
+        has_human:
+          type: integer
+        volume:
+          type: string
+        vision:
+          type: integer
+        device_name:
+          type: string
+        device_type:
+          type: integer
+        video_type:
+          type: integer
+        extra:
+          type: string
+        viewed:
+          type: boolean
+        create_time:
+          type: integer
+        update_time:
+          type: integer
+        status:
+          type: integer
+        station_name:
+          type: string
+        p2p_did:
+          type: string
+        push_did:
+          type: string
+        p2p_license:
+          type: string
+        push_license:
+          type: string
+        ndt_did:
+          type: string
+        ndt_license:
+          type: string
+        p2p_conn:
+          type: string
+        app_conn:
+          type: string
+        wipn_enc_dec_key:
+          type: string
+        wipn_ndt_aes128key:
+          type: string
+        query_server_did:
+          type: string
+        prefix:
+          type: string
+        ai_faces:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiFace'
+        is_favorite:
+          type: boolean
+    AiFace:
+      properties:
+        ai_face_id:
+          type: integer
+        is_stranger:
+          type: integer
+        face_url:
+          type: integer
+
