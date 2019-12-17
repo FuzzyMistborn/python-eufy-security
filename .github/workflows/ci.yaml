@@ -81,4 +81,4 @@ jobs:
           pip install poetry
           poetry install
       - run: |
-          poetry run bandit -r --configfile=.bandit.yaml eufy_security/ scripts/ tests/
+          poetry run bandit -r --configfile=.bandit.yaml eufy_security/
