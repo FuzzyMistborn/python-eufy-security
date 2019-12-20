@@ -1,6 +1,6 @@
 """Define parameters that can be sent to the base station."""
-from enum import Enum
 import base64
+from enum import Enum
 import json
 
 
