@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 from .params import ParamType
 
-
 if TYPE_CHECKING:
     from .api import API  # pylint: disable=cyclic-import
 
