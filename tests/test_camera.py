@@ -6,30 +6,28 @@ import pytest
 
 from eufy_security import async_login
 
-from .const import TEST_EMAIL, TEST_PASSWORD
-from .fixtures import devices_list_json, login_success_json
-from .fixtures.camera import start_stream_json, stop_stream_json
+from .common import TEST_EMAIL, TEST_PASSWORD, load_fixture
 
 
 @pytest.mark.asyncio
-async def test_properties(
-    aresponses, devices_list_json, event_loop, login_success_json
-):
+async def test_properties(aresponses, login_success_response):
     """Test authenticating with a bad email."""
     aresponses.add(
         "mysecurity.eufylife.com",
         "/api/v1/passport/login",
         "post",
-        aresponses.Response(text=json.dumps(login_success_json), status=200),
+        aresponses.Response(text=json.dumps(login_success_response), status=200),
     )
     aresponses.add(
         "security-app.eufylife.com",
         "/v1/app/get_devs_list",
         "post",
-        aresponses.Response(text=json.dumps(devices_list_json), status=200),
+        aresponses.Response(
+            text=load_fixture("devices_list_response.json"), status=200
+        ),
     )
 
-    async with aiohttp.ClientSession(loop=event_loop) as websession:
+    async with aiohttp.ClientSession() as websession:
         api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
         camera = list(api.cameras.values())[0]
         assert camera.hardware_version == "HAIYI-IMX323"
@@ -43,30 +41,32 @@ async def test_properties(
 
 
 @pytest.mark.asyncio
-async def test_start_stream(
-    aresponses, devices_list_json, event_loop, login_success_json, start_stream_json
-):
+async def test_start_stream(aresponses, login_success_response):
     """Test starting the RTSP stream."""
     aresponses.add(
         "mysecurity.eufylife.com",
         "/api/v1/passport/login",
         "post",
-        aresponses.Response(text=json.dumps(login_success_json), status=200),
+        aresponses.Response(text=json.dumps(login_success_response), status=200),
     )
     aresponses.add(
         "security-app.eufylife.com",
         "/v1/app/get_devs_list",
         "post",
-        aresponses.Response(text=json.dumps(devices_list_json), status=200),
+        aresponses.Response(
+            text=load_fixture("devices_list_response.json"), status=200
+        ),
     )
     aresponses.add(
         "security-app.eufylife.com",
         "/v1/web/equipment/start_stream",
         "post",
-        aresponses.Response(text=json.dumps(start_stream_json), status=200),
+        aresponses.Response(
+            text=load_fixture("start_stream_response.json"), status=200
+        ),
     )
 
-    async with aiohttp.ClientSession(loop=event_loop) as websession:
+    async with aiohttp.ClientSession() as websession:
         api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
         camera = list(api.cameras.values())[0]
         stream_url = await camera.async_start_stream()
@@ -74,58 +74,62 @@ async def test_start_stream(
 
 
 @pytest.mark.asyncio
-async def test_stop_stream(
-    aresponses, devices_list_json, event_loop, login_success_json, stop_stream_json
-):
+async def test_stop_stream(aresponses, login_success_response):
     """Test stopping the RTSP stream."""
     aresponses.add(
         "mysecurity.eufylife.com",
         "/api/v1/passport/login",
         "post",
-        aresponses.Response(text=json.dumps(login_success_json), status=200),
+        aresponses.Response(text=json.dumps(login_success_response), status=200),
     )
     aresponses.add(
         "security-app.eufylife.com",
         "/v1/app/get_devs_list",
         "post",
-        aresponses.Response(text=json.dumps(devices_list_json), status=200),
+        aresponses.Response(
+            text=load_fixture("devices_list_response.json"), status=200
+        ),
     )
     aresponses.add(
         "security-app.eufylife.com",
         "/v1/web/equipment/stop_stream",
         "post",
-        aresponses.Response(text=json.dumps(stop_stream_json), status=200),
+        aresponses.Response(text=load_fixture("stop_stream_response.json"), status=200),
     )
 
-    async with aiohttp.ClientSession(loop=event_loop) as websession:
+    async with aiohttp.ClientSession() as websession:
         api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
         camera = list(api.cameras.values())[0]
         await camera.async_stop_stream()
 
 
 @pytest.mark.asyncio
-async def test_update(aresponses, devices_list_json, event_loop, login_success_json):
+async def test_update(aresponses, login_success_response):
     """Test stopping the RTSP stream."""
     aresponses.add(
         "mysecurity.eufylife.com",
         "/api/v1/passport/login",
         "post",
-        aresponses.Response(text=json.dumps(login_success_json), status=200),
+        aresponses.Response(text=json.dumps(login_success_response), status=200),
     )
     aresponses.add(
         "security-app.eufylife.com",
         "/v1/app/get_devs_list",
         "post",
-        aresponses.Response(text=json.dumps(devices_list_json), status=200),
+        aresponses.Response(
+            text=load_fixture("devices_list_response.json"), status=200
+        ),
     )
     aresponses.add(
         "security-app.eufylife.com",
         "/v1/app/get_devs_list",
         "post",
-        aresponses.Response(text=json.dumps(devices_list_json), status=200),
+        aresponses.Response(
+            text=load_fixture("devices_list_response.json"), status=200
+        ),
     )
 
-    async with aiohttp.ClientSession(loop=event_loop) as websession:
+    async with aiohttp.ClientSession() as websession:
         api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
         camera = list(api.cameras.values())[0]
         await camera.async_update()

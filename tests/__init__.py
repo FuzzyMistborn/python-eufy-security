@@ -1,1 +1,1 @@
-"""Define the test suite."""
+"""Define package tests."""
