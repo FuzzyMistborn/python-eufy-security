@@ -94,7 +94,7 @@ async def test_bad_email(aresponses):
 
 @pytest.mark.asyncio
 async def test_bad_password(aresponses):
-    """Test authenticating with a bad pasword."""
+    """Test authenticating with a bad password."""
     aresponses.add(
         "mysecurity.eufylife.com",
         "/api/v1/passport/login",
