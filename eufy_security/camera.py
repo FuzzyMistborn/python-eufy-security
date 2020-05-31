@@ -2,7 +2,7 @@
 import logging
 from typing import TYPE_CHECKING
 
-from .params import ParamType
+from .types import DeviceType, ParamType
 
 if TYPE_CHECKING:
     from .api import API  # pylint: disable=cyclic-import
@@ -17,6 +17,11 @@ class Camera:
         """Initialize."""
         self._api = api
         self.camera_info: dict = camera_info
+
+    @property
+    def device_type(self) -> str:
+        """Return the station's device type."""
+        return DeviceType(self.camera_info["device_type"])
 
     @property
     def hardware_version(self) -> str:

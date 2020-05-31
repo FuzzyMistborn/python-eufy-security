@@ -20,6 +20,12 @@ class RequestError(EufySecurityError):
     pass
 
 
+class EufySecurityP2PError(Exception):
+    """Define a P2P related error."""
+
+    pass
+
+
 ERRORS: Dict[int, Type[EufySecurityError]] = {26006: InvalidCredentialsError}
 
 
