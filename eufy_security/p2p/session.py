@@ -129,6 +129,9 @@ class EufyP2PClientProtocol(BaseP2PClientProtocol):
                     ),
                 )
             )
+            # Mark connection healthy
+            if not self.connection_success.done():
+                self.connection_success.set_result(True)
         elif msg_type == P2PClientProtocolResponseMessageType.END:
             self.transport.close()
         elif msg_type == P2PClientProtocolResponseMessageType.PING:
@@ -168,8 +171,6 @@ class EufyP2PClientProtocol(BaseP2PClientProtocol):
                         bytes([0x88, 0x00, 0x00, 0x00, 0x01] + [0] * 141),
                     )
                 )
-                if not self.connection_success.done():
-                    self.connection_success.set_result(True)
         except ValueError:
             _LOGGER.error(f"Received unknown command type: {command_id}")
 
