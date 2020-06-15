@@ -1,3 +1,4 @@
+import asyncio
 import math
 
 from .types import (
@@ -6,7 +7,7 @@ from .types import (
 )
 
 
-class BaseP2PClientProtocol:
+class BaseP2PClientProtocol(asyncio.DatagramProtocol):
     def create_message(
         self, msg_type: P2PClientProtocolRequestMessageType, payload=bytearray()
     ):

@@ -69,7 +69,9 @@ class API:  # pylint: disable=too-many-instance-attributes
                     camera = self.cameras[device_info["device_sn"]]
                     camera.camera_info = device_info
                     continue
-                self.cameras[device_info["device_sn"]] = Camera(self, device_info)
+                self.cameras[device_info["device_sn"]] = Camera.from_info(
+                    self, device_info
+                )
 
         # Stations
         stations_resp = await self.request("post", "app/get_hub_list")

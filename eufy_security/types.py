@@ -124,3 +124,10 @@ class ParamType(Enum):
         if self is ParamType.SNOOZE_MODE:
             value = base64.b64encode(value.encode()).decode()
         return value
+
+
+class GuardMode(Enum):
+    AWAY = 0
+    HOME = 1
+    DISARMED = 63
+    SCHEDULE = 2

@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING, Optional
 
 from .errors import EufySecurityP2PError
 from .p2p.session import P2PSession
-from .types import DeviceType, ParamType
+from .p2p.types import CommandType
+from .types import DeviceType, GuardMode, ParamType
 
 if TYPE_CHECKING:
     from .api import API  # pylint: disable=cyclic-import
@@ -23,6 +24,16 @@ class Station:
         self.station_info: dict = station_info
 
     @asynccontextmanager
+    async def async_establish_session(self, session: P2PSession = None):
+        if session and session.valid_for(self.serial):
+            yield session
+            return
+
+        async with self.connect() as session:
+            yield session
+            return
+
+    @asynccontextmanager
     async def connect(self):
         dsk_key_resp = await self._api.request(
             "post", "app/equipment/get_dsk_keys", json={"station_sns": [self.serial]}
@@ -30,6 +41,7 @@ class Station:
         for item in dsk_key_resp.get("data")["dsk_keys"]:
             if item["station_sn"] == self.serial:
                 p2p_session = P2PSession(
+                    self.serial,
                     self.station_info["p2p_did"],
                     item["dsk_key"],
                     self.station_info["member"]["action_user_id"],
@@ -106,3 +118,9 @@ class Station:
     async def async_update(self) -> None:
         """Get the latest values for the station's properties."""
         await self._api.async_update_device_info()
+
+    async def set_guard_mode(self, mode: GuardMode, session: P2PSession = None) -> None:
+        async with self.async_establish_session(session) as session:
+            await session.async_send_command_with_int(
+                0, CommandType.CMD_SET_ARMING, mode.value
+            )

@@ -13,20 +13,17 @@ class DiscoveryP2PClientProtocol(BaseP2PClientProtocol):
         self.p2p_did = p2p_did
         self.key = key
         self.on_conn_lost = on_conn_lost
-        self.transport = None
         self.addresses = []
         self.response_count = 0
 
-    def connection_made(self, transport):
-        self.transport = transport
-
+    def connection_made(self, transport, addr):
         # Build payload
         p2p_did_components = self.p2p_did.split("-")
         payload = bytearray(p2p_did_components[0].encode())
         payload.extend(int(p2p_did_components[1]).to_bytes(5, byteorder="big"))
         payload.extend(p2p_did_components[2].encode())
         payload.extend([0x00, 0x00, 0x00, 0x00, 0x00])
-        ip, port = self.transport.get_extra_info("sockname")
+        ip, port = transport.get_extra_info("sockname")
         payload.extend(port.to_bytes(2, byteorder="little"))
         payload.extend([int(x) for x in ip.split(".")[::-1]])
         payload.extend(
@@ -35,17 +32,18 @@ class DiscoveryP2PClientProtocol(BaseP2PClientProtocol):
         payload.extend(self.key.encode())
         payload.extend([0x00, 0x00, 0x00, 0x00])
 
-        self.transport.sendto(
+        transport.sendto(
             self.create_message(
                 P2PClientProtocolRequestMessageType.LOOKUP_WITH_KEY, payload
-            )
+            ),
+            addr,
         )
         # Manually timeout if we don't get an answer
         self.loop.create_task(self.timeout(1.5))
 
     async def timeout(self, seconds: float):
         await asyncio.sleep(seconds)
-        self.transport.close()
+        self.return_candidates()
 
     def process_response(
         self, msg_type: P2PClientProtocolResponseMessageType, payload: bytes
@@ -60,10 +58,11 @@ class DiscoveryP2PClientProtocol(BaseP2PClientProtocol):
             # if we received both
             self.response_count += 1
             if self.response_count == 2:
-                self.transport.close()
+                self.return_candidates()
 
     def error_received(self, exc):
         _LOGGER.exception("Error received", exc_info=exc)
 
-    def connection_lost(self, exc):
-        self.on_conn_lost.set_result(self.addresses)
+    def return_candidates(self):
+        if not self.on_conn_lost.done():
+            self.on_conn_lost.set_result(self.addresses)

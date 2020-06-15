@@ -7,6 +7,7 @@ import math
 import socket
 from typing import List, Tuple
 
+from .connection_manager import ConnectionManager
 from .discovery import DiscoveryP2PClientProtocol
 from .lib32100 import BaseP2PClientProtocol
 from .types import (
@@ -24,10 +25,10 @@ SEEDS = [
     "34.235.4.153",
     "54.153.101.7",
     "18.223.127.200",
-    # EU?
+    # EU discovery contacts
     "54.223.148.206",
     "18.197.212.165",
-    "13.251.222.7"
+    "13.251.222.7",
 ]
 
 
@@ -48,13 +49,14 @@ class EufyP2PClientProtocol(BaseP2PClientProtocol):
 
     def send(self, data):
         if self.transport and not self.transport.is_closing():
-            self.transport.sendto(data)
+            self.transport.sendto(data, self.addr)
 
     def close(self):
         self.send(self.create_message(P2PClientProtocolRequestMessageType.END))
 
-    def connection_made(self, transport):
+    def connection_made(self, transport, addr):
         self.transport = transport
+        self.addr = addr
 
         p2p_did_components = self.p2p_did.split("-")
         payload = bytearray(p2p_did_components[0].encode())
@@ -76,7 +78,8 @@ class EufyP2PClientProtocol(BaseP2PClientProtocol):
     async def timeout(self, seconds: float):
         await asyncio.sleep(seconds)
         if not self.keepalive_task:
-            self.transport.close()
+            if not self.connection_success.done():
+                self.connection_success.set_result(False)
 
     async def keepalive(self):
         ping_tick = 0
@@ -191,14 +194,11 @@ class EufyP2PClientProtocol(BaseP2PClientProtocol):
         await self.pending[msg_seqno].wait()
         del self.pending[msg_seqno]
 
-    def error_received(self, exc):
-        _LOGGER.exception("Error received", exc_info=exc)
-
     def connection_lost(self, exc):
-        _LOGGER.info("Connection closed")
         if self.keepalive_task:
             self.keepalive_task.cancel()
         if not self.connection_success.done():
+            _LOGGER.info("Connection closed")
             self.connection_success.set_result(False)
 
 
@@ -207,40 +207,50 @@ class P2PSession:
     Implement the P2P protocol needed to talk to stations
     """
 
-    def __init__(self, p2p_did: str, discovery_key: str, actor: str):
+    def __init__(
+        self, station_serial: str, p2p_did: str, discovery_key: str, actor: str
+    ):
+        self.station_serial = station_serial
         self.actor = actor
         self.p2p_did = p2p_did
         self.discovery_key = discovery_key
-        self._handle = None
+        self._session = None
+
+    def valid_for(self, serial):
+        return serial == self.station_serial
 
     async def connect(self) -> bool:
-        candidates = await self.lookup()
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind(("0.0.0.0", 0))
+        loop = asyncio.get_running_loop()
+        _, self.connection_manager = await loop.create_datagram_endpoint(
+            lambda: ConnectionManager(), sock=sock,
+        )
+
+        candidates = await self.lookup(self.connection_manager)
         local_addresses = [
             x for x in candidates if ipaddress.ip_address(x[0]).is_private
         ]
         remote_addresses = [x for x in candidates if x not in local_addresses]
 
-        loop = asyncio.get_running_loop()
-
         for candidate in local_addresses + remote_addresses:
-            _LOGGER.info(f"Trying addresses: {candidate}")
+            _LOGGER.info(f"Trying station address: {candidate}")
             connection_result = loop.create_future()
-            self._handle = await loop.create_datagram_endpoint(
-                lambda: EufyP2PClientProtocol(loop, self.p2p_did, connection_result),
-                remote_addr=candidate,
-            )
+            handler = EufyP2PClientProtocol(loop, self.p2p_did, connection_result)
+            self.connection_manager.connect(candidate, handler)
             if await connection_result is True:
                 _LOGGER.info(f"Connected to {candidate}")
+                self._session = handler
                 return True
         return False
 
     async def close(self):
-        if self._handle:
+        if self._session:
             # Gracefully stop the connection and then forcibly close the transport
-            self._handle[1].close()
-            self._handle[0].close()
+            self._session.close()
+            self.connection_manager.close()
 
-    async def lookup(self) -> List[Tuple[str, int]]:
+    async def lookup(self, connection_manager) -> List[Tuple[str, int]]:
         """
         Identifies the UDP ip+port combination needed to communicate with the station
         """
@@ -249,20 +259,21 @@ class P2PSession:
             _LOGGER.info(f"Trying discovery seed {seed}")
             loop = asyncio.get_running_loop()
             discovery_result = loop.create_future()
-            await loop.create_datagram_endpoint(
-                lambda: DiscoveryP2PClientProtocol(
-                    loop, self.p2p_did, self.discovery_key, discovery_result
-                ),
-                remote_addr=(seed, 32100),
+            handler = DiscoveryP2PClientProtocol(
+                loop, self.p2p_did, self.discovery_key, discovery_result
             )
+            connection_manager.connect((seed, 32100), handler)
             discovery_futures.append(discovery_result)
 
         discovery_results = await asyncio.gather(*discovery_futures)
         return list(set([item for sublist in discovery_results for item in sublist]))
 
-    async def async_set_command_with_int_string(
+    async def async_send_command_with_int_string(
         self, channel: int, command_type: CommandType, value: int
     ):
+        """
+        Advanced API method used to send requests that aren't exposed as convenience methods
+        """
         payload = bytearray([0x88, 0x00])
         # I suspect this would be the place that specifies with channel/camera to act on but I don't have multiple devices to test
         payload.extend(
@@ -271,4 +282,14 @@ class P2PSession:
         payload.extend([value] + [0] * 3)
         payload.extend(self.actor.encode())
         payload.extend([0] * 88)  # Unsure what this contains
-        await self._handle[1].async_send_command(command_type, payload=payload)
+        await self._session.async_send_command(command_type, payload=payload)
+
+    async def async_send_command_with_int(
+        self, channel: int, command_type: CommandType, value: int
+    ):
+        payload = bytearray([0x84, 0x00])
+        payload.extend([0x00, 0x00, 0x01, 0x00, 0xFF, 0x00, 0x00, 0x00])
+        payload.extend([value] + [0] * 3)
+        payload.extend(self.actor.encode())
+        payload.extend([0] * 88)
+        await self._session.async_send_command(command_type, payload=payload)
