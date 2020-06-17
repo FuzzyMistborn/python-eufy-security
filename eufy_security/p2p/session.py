@@ -8,7 +8,7 @@ import socket
 from typing import List, Tuple
 
 from .connection_manager import ConnectionManager
-from .discovery import DiscoveryP2PClientProtocol
+from .discovery import DiscoveryP2PClientProtocol, LocalDiscoveryP2PClientProtocol
 from .lib32100 import BaseP2PClientProtocol
 from .types import (
     CommandType,
@@ -111,7 +111,10 @@ class EufyP2PClientProtocol(BaseP2PClientProtocol):
             await asyncio.sleep(0.05)
 
     def process_response(
-        self, msg_type: P2PClientProtocolResponseMessageType, payload: bytes
+        self,
+        msg_type: P2PClientProtocolResponseMessageType,
+        payload: bytes,
+        addr: Tuple[str, int],
     ):
         if msg_type == P2PClientProtocolResponseMessageType.PONG:
             return
@@ -219,7 +222,7 @@ class P2PSession:
     def valid_for(self, serial):
         return serial == self.station_serial
 
-    async def connect(self) -> bool:
+    async def connect(self, addr: str = None) -> bool:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(("0.0.0.0", 0))
         loop = asyncio.get_running_loop()
@@ -227,7 +230,7 @@ class P2PSession:
             lambda: ConnectionManager(), sock=sock,
         )
 
-        candidates = await self.lookup(self.connection_manager)
+        candidates = await self.lookup(self.connection_manager, addr)
         local_addresses = [
             x for x in candidates if ipaddress.ip_address(x[0]).is_private
         ]
@@ -250,23 +253,37 @@ class P2PSession:
             self._session.close()
             self.connection_manager.close()
 
-    async def lookup(self, connection_manager) -> List[Tuple[str, int]]:
+    async def lookup(
+        self, connection_manager: ConnectionManager, addr: str
+    ) -> List[Tuple[str, int]]:
         """
         Identifies the UDP ip+port combination needed to communicate with the station
         """
-        discovery_futures = []
-        for seed in SEEDS:
-            _LOGGER.info(f"Trying discovery seed {seed}")
+        if addr:
+            _LOGGER.info(f"Trying discovery on {addr}")
             loop = asyncio.get_running_loop()
             discovery_result = loop.create_future()
-            handler = DiscoveryP2PClientProtocol(
-                loop, self.p2p_did, self.discovery_key, discovery_result
+            _, _ = await loop.create_datagram_endpoint(
+                lambda: LocalDiscoveryP2PClientProtocol(loop, addr, discovery_result),
+                local_addr=("0.0.0.0", 0),
             )
-            connection_manager.connect((seed, 32100), handler)
-            discovery_futures.append(discovery_result)
+            return await discovery_result
+        else:
+            discovery_futures = []
+            for seed in SEEDS:
+                _LOGGER.info(f"Trying discovery seed {seed}")
+                loop = asyncio.get_running_loop()
+                discovery_result = loop.create_future()
+                handler = DiscoveryP2PClientProtocol(
+                    loop, self.p2p_did, self.discovery_key, discovery_result
+                )
+                connection_manager.connect((seed, 32100), handler)
+                discovery_futures.append(discovery_result)
 
-        discovery_results = await asyncio.gather(*discovery_futures)
-        return list(set([item for sublist in discovery_results for item in sublist]))
+            discovery_results = await asyncio.gather(*discovery_futures)
+            return list(
+                set([item for sublist in discovery_results for item in sublist])
+            )
 
     async def async_send_command_with_int_string(
         self, channel: int, command_type: CommandType, value: int

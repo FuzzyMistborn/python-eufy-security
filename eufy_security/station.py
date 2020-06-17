@@ -34,7 +34,7 @@ class Station:
             return
 
     @asynccontextmanager
-    async def connect(self):
+    async def connect(self, addr: str = None):
         dsk_key_resp = await self._api.request(
             "post", "app/equipment/get_dsk_keys", json={"station_sns": [self.serial]}
         )
@@ -46,7 +46,7 @@ class Station:
                     item["dsk_key"],
                     self.station_info["member"]["action_user_id"],
                 )
-                is_connected = await p2p_session.connect()
+                is_connected = await p2p_session.connect(addr)
                 if is_connected:
                     try:
                         yield p2p_session

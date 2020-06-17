@@ -1,4 +1,5 @@
 import asyncio
+from typing import Tuple
 
 from .lib32100 import BaseP2PClientProtocol
 from .types import (
@@ -8,11 +9,11 @@ from .types import (
 
 
 class DiscoveryP2PClientProtocol(BaseP2PClientProtocol):
-    def __init__(self, loop, p2p_did: str, key: str, on_conn_lost):
+    def __init__(self, loop, p2p_did: str, key: str, on_lookup_complete):
         self.loop = loop
         self.p2p_did = p2p_did
         self.key = key
-        self.on_conn_lost = on_conn_lost
+        self.on_lookup_complete = on_lookup_complete
         self.addresses = []
         self.response_count = 0
 
@@ -46,7 +47,10 @@ class DiscoveryP2PClientProtocol(BaseP2PClientProtocol):
         self.return_candidates()
 
     def process_response(
-        self, msg_type: P2PClientProtocolResponseMessageType, payload: bytes
+        self,
+        msg_type: P2PClientProtocolResponseMessageType,
+        payload: bytes,
+        addr: Tuple[str, int],
     ):
         msg = payload[2:]
         if msg_type == P2PClientProtocolResponseMessageType.LOOKUP_ADDR:
@@ -60,9 +64,44 @@ class DiscoveryP2PClientProtocol(BaseP2PClientProtocol):
             if self.response_count == 2:
                 self.return_candidates()
 
-    def error_received(self, exc):
-        _LOGGER.exception("Error received", exc_info=exc)
+    def return_candidates(self):
+        if not self.on_lookup_complete.done():
+            self.on_lookup_complete.set_result(self.addresses)
+
+
+class LocalDiscoveryP2PClientProtocol(BaseP2PClientProtocol):
+    def __init__(self, loop, target: str, on_lookup_complete):
+        self.loop = loop
+        self.target = target
+        self.addresses = []
+        self.on_lookup_complete = on_lookup_complete
+
+    def connection_made(self, transport):
+        # Build payload
+        payload = bytearray([0] * 2)
+        transport.sendto(
+            self.create_message(
+                P2PClientProtocolRequestMessageType.LOCAL_LOOKUP, payload
+            ),
+            addr=(self.target, 32108),
+        )
+        # Manually timeout if we don't get an answer
+        self.loop.create_task(self.timeout(1.5))
+
+    async def timeout(self, seconds: float):
+        await asyncio.sleep(seconds)
+        self.return_candidates()
+
+    def process_response(
+        self,
+        msg_type: P2PClientProtocolResponseMessageType,
+        payload: bytes,
+        addr: Tuple[str, int],
+    ):
+        if msg_type == P2PClientProtocolResponseMessageType.LOCAL_LOOKUP_RESP:
+            self.addresses.append(addr)
+            self.return_candidates()
 
     def return_candidates(self):
-        if not self.on_conn_lost.done():
-            self.on_conn_lost.set_result(self.addresses)
+        if not self.on_lookup_complete.done():
+            self.on_lookup_complete.set_result(self.addresses)

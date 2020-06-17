@@ -1,5 +1,6 @@
 import asyncio
 import math
+from typing import Tuple
 
 from .types import (
     P2PClientProtocolRequestMessageType,
@@ -19,12 +20,15 @@ class BaseP2PClientProtocol(asyncio.DatagramProtocol):
         msg.extend(payload)
         return msg
 
-    def datagram_received(self, data, _):
+    def datagram_received(self, data, addr):
         msg_type = P2PClientProtocolResponseMessageType(bytes(data[0:2]))
         payload = data[2:]
-        self.process_response(msg_type, payload)
+        self.process_response(msg_type, payload, addr)
 
     def process_response(
-        self, msg_type: P2PClientProtocolResponseMessageType, payload: bytes
+        self,
+        msg_type: P2PClientProtocolResponseMessageType,
+        payload: bytes,
+        addr: Tuple[str, int],
     ):
         raise NotImplementedError()
