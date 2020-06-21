@@ -1,7 +1,8 @@
 """Define a Eufy camera object."""
-from contextlib import asynccontextmanager
 import logging
 from typing import TYPE_CHECKING
+
+from async_generator import asynccontextmanager
 
 from .errors import EufySecurityP2PError
 from .p2p.session import P2PSession

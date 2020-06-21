@@ -1,8 +1,9 @@
 """Define a Eufy station object."""
 import asyncio
-from contextlib import asynccontextmanager
 import logging
 from typing import TYPE_CHECKING, Optional
+
+from async_generator import asynccontextmanager
 
 from .errors import EufySecurityP2PError
 from .p2p.session import P2PSession
