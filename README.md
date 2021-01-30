@@ -10,7 +10,7 @@
 This is an experimental Python library for Eufy Security devices (cameras, doorbells, 
 etc.).
 
-# 🚨 🚨 THIS LIBRARY IS CURRENTLY UNMAINTAINED 🚨 🚨
+# 🚨 THIS LIBRARY IS CURRENTLY UNMAINTAINED 🚨
 The requirements to get a working library have advanced well beyond my skill.  There are now other libraries out there that have much more functionality available.  I'm leaving this up as an example/guidance but don't expect this library to work without modification.  If there's a dev out there who wants to fork/commit back to this repo just reach out.
 
 # Python Versions
