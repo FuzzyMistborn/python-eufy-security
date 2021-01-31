@@ -2,7 +2,12 @@
 import logging
 from typing import TYPE_CHECKING
 
-from .params import ParamType
+from async_generator import asynccontextmanager
+
+from .errors import EufySecurityP2PError
+from .p2p.session import P2PSession
+from .p2p.types import CommandType
+from .types import DeviceType, ParamType
 
 if TYPE_CHECKING:
     from .api import API  # pylint: disable=cyclic-import
@@ -17,6 +22,22 @@ class Camera:
         """Initialize."""
         self._api = api
         self.camera_info: dict = camera_info
+
+    @staticmethod
+    def from_info(api: "API", camera_info: dict) -> "Camera":
+        camera_type = DeviceType(camera_info["device_type"])
+        if camera_type == DeviceType.FLOODLIGHT:
+            klass = FloodlightCamera
+        elif camera_type == DeviceType.DOORBELL:
+            klass = DoorbellCamera
+        else:
+            klass = Camera
+        return klass(api, camera_info)
+
+    @property
+    def device_type(self) -> str:
+        """Return the station's device type."""
+        return DeviceType(self.camera_info["device_type"])
 
     @property
     def hardware_version(self) -> str:
@@ -131,3 +152,43 @@ class Camera:
     async def async_update(self) -> None:
         """Get the latest values for the camera's properties."""
         await self._api.async_update_device_info()
+
+    @asynccontextmanager
+    async def async_establish_session(self, session: P2PSession = None):
+        if session and session.valid_for(self.station_serial):
+            yield session
+            return
+
+        if self.station_serial in self._api.stations:
+            async with self._api.stations[self.station_serial].connect() as session:
+                yield session
+                return
+        else:
+            raise EufySecurityP2PError(f"Could not find station for {self.name}")
+
+
+class DoorbellCamera(Camera):
+    async def enable_osd(self, enable: bool, session: P2PSession = None) -> None:
+        async with self.async_establish_session(session) as session:
+            await session.async_send_command_with_int_string(
+                0, CommandType.CMD_SET_DEVS_OSD, 1 if enable else 0
+            )
+
+
+class FloodlightCamera(Camera):
+    async def enable_osd(self, enable: bool, session: P2PSession = None) -> None:
+        async with self.async_establish_session(session) as session:
+            # 0 - disables the timestamp
+            # 1 - enables timestamp but removes logo
+            # 2 - enables all OSD items
+            await session.async_send_command_with_int_string(
+                0, CommandType.CMD_SET_DEVS_OSD, 2 if enable else 1
+            )
+
+    async def enable_manual_light(
+        self, enable: bool, session: P2PSession = None
+    ) -> None:
+        async with self.async_establish_session(session) as session:
+            await session.async_send_command_with_int_string(
+                0, CommandType.CMD_SET_FLOODLIGHT_MANUAL_SWITCH, 1 if enable else 0
+            )

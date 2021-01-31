@@ -1,5 +1,6 @@
 aiohttp==3.6.2
 aresponses==1.1.2
+async_generator==1.10
 pytest-aiohttp==0.3.0
 pytest-cov==2.8.1
 pytest==5.3.5

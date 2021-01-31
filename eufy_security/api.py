@@ -8,6 +8,8 @@ from aiohttp.client_exceptions import ClientError
 
 from .camera import Camera
 from .errors import InvalidCredentialsError, RequestError, raise_error
+from .station import Station
+from .types import DeviceType
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -28,6 +30,7 @@ class API:  # pylint: disable=too-many-instance-attributes
         self._token_expiration: Optional[datetime] = None
 
         self.cameras: Dict[str, Camera] = {}
+        self.stations: Dict[str, Station] = {}
 
     async def async_authenticate(self) -> None:
         """Authenticate and get an access token."""
@@ -54,17 +57,35 @@ class API:  # pylint: disable=too-many-instance-attributes
 
     async def async_update_device_info(self) -> None:
         """Get the latest device info."""
+        # Cameras
         devices_resp = await self.request("post", "app/get_devs_list")
 
         if not devices_resp.get("data"):
             return
 
         for device_info in devices_resp["data"]:
-            if device_info["device_sn"] in self.cameras:
-                camera = self.cameras[device_info["device_sn"]]
-                camera.camera_info = device_info
-                continue
-            self.cameras[device_info["device_sn"]] = Camera(self, device_info)
+            if DeviceType(device_info["device_type"]).is_camera():
+                if device_info["device_sn"] in self.cameras:
+                    camera = self.cameras[device_info["device_sn"]]
+                    camera.camera_info = device_info
+                    continue
+                self.cameras[device_info["device_sn"]] = Camera.from_info(
+                    self, device_info
+                )
+
+        # Stations
+        stations_resp = await self.request("post", "app/get_hub_list")
+
+        if not stations_resp.get("data"):
+            return
+
+        for device_info in stations_resp["data"]:
+            if DeviceType(device_info["device_type"]).is_station():
+                if device_info["station_sn"] in self.stations:
+                    station = self.stations[device_info["station_sn"]]
+                    station.station_info = device_info
+                    continue
+                self.stations[device_info["station_sn"]] = Station(self, device_info)
 
     async def request(
         self,
