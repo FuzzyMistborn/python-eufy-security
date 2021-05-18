@@ -1,12 +1,13 @@
 """Define a base object for interacting with the Eufy camera API."""
 from datetime import datetime
 import logging
-from typing import Dict, Optional
+from typing import List, Dict, Optional
 
 from aiohttp import ClientSession
 from aiohttp.client_exceptions import ClientError
 
-from .camera import Camera
+from .device import Device
+from .params import ParamType
 from .errors import InvalidCredentialsError, RequestError, raise_error
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -26,8 +27,7 @@ class API:  # pylint: disable=too-many-instance-attributes
         self._session: ClientSession = websession
         self._token: Optional[str] = None
         self._token_expiration: Optional[datetime] = None
-
-        self.cameras: Dict[str, Camera] = {}
+        self.devices: Dict[str, Device] = {}
 
     async def async_authenticate(self) -> None:
         """Authenticate and get an access token."""
@@ -48,23 +48,63 @@ class API:  # pylint: disable=too-many-instance-attributes
             _LOGGER.info("Switching to another API_BASE: %s", self._api_base)
 
     async def async_get_history(self) -> dict:
-        """Get the camera's history."""
+        """Get the device's history."""
         history_resp = await self.request("post", "event/app/get_all_history_record")
         return history_resp["data"]
 
     async def async_update_device_info(self) -> None:
         """Get the latest device info."""
         devices_resp = await self.request("post", "app/get_devs_list")
+        for device_info in devices_resp.get("data", []):
+            device = Device(self, device_info)
+            if device.serial in self.devices:
+                self.devices[device.serial].update(device_info)
+            else:
+                self.devices[device.serial] = device
 
-        if not devices_resp.get("data"):
-            return
+    async def async_set_params(self, device: Device, params: dict) -> None:
+        """Set device parameters."""
+        serialized_params = []
+        for param_type, value in params.items():
+            if isinstance(param_type, ParamType):
+                value = param_type.write_value(value)
+                param_type = param_type.value
+            serialized_params.append({"param_type": param_type, "param_value": value})
+        await self.request(
+            "post",
+            "app/upload_devs_params",
+            json={
+                "device_sn": device.serial,
+                "station_sn": device.station_serial,
+                "params": serialized_params,
+            },
+        )
 
-        for device_info in devices_resp["data"]:
-            if device_info["device_sn"] in self.cameras:
-                camera = self.cameras[device_info["device_sn"]]
-                camera.camera_info = device_info
-                continue
-            self.cameras[device_info["device_sn"]] = Camera(self, device_info)
+    async def async_start_stream(self, device: Device) -> str:
+        """Start the device stream and return the RTSP URL."""
+        start_resp = await self.request(
+            "post",
+            "web/equipment/start_stream",
+            json={
+                "device_sn": device.serial,
+                "station_sn": device.station_serial,
+                "proto": 2,
+            },
+        )
+
+        return start_resp["data"]["url"]
+
+    async def async_stop_stream(self, device: Device) -> None:
+        """Stop the device stream."""
+        await self.request(
+            "post",
+            "web/equipment/stop_stream",
+            json={
+                "device_sn": device.serial,
+                "station_sn": device.station_serial,
+                "proto": 2,
+            },
+        )
 
     async def request(
         self,

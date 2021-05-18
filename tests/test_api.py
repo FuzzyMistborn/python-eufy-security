@@ -72,7 +72,7 @@ async def test_401_refresh_success(aresponses, login_success_response):
 
     async with aiohttp.ClientSession() as websession:
         api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
-        assert len(api.cameras) == 2
+        assert len(api.devices) == 2
 
 
 @pytest.mark.asyncio
@@ -167,7 +167,7 @@ async def test_expired_access_token(aresponses, login_success_response):
         api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
         api._token_expiration = datetime.now() - timedelta(seconds=10)
         await api.async_update_device_info()
-        assert len(api.cameras) == 2
+        assert len(api.devices) == 2
 
 
 @pytest.mark.asyncio
@@ -239,4 +239,4 @@ async def test_login_success(aresponses, login_success_response):
         assert api._password == TEST_PASSWORD
         assert api._token is not None
         assert api._token_expiration is not None
-        assert len(api.cameras) == 2
+        assert len(api.devices) == 2

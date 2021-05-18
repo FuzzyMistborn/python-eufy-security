@@ -1,4 +1,4 @@
-"""Define tests for cameras."""
+"""Define tests for devices."""
 import json
 
 import aiohttp
@@ -29,15 +29,15 @@ async def test_properties(aresponses, login_success_response):
 
     async with aiohttp.ClientSession() as websession:
         api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
-        camera = list(api.cameras.values())[0]
-        assert camera.hardware_version == "HAIYI-IMX323"
-        assert camera.last_camera_image_url == "https://path/to/image.jpg"
-        assert camera.mac == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-        assert camera.model == "T8111"
-        assert camera.name == "Driveway"
-        assert camera.serial == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx1"
-        assert camera.software_version == "1.9.3"
-        assert camera.station_serial == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        device = list(api.devices.values())[0]
+        assert device.hardware_version == "HAIYI-IMX323"
+        assert device.last_camera_image_url == "https://path/to/image.jpg"
+        assert device.mac == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        assert device.model == "T8111"
+        assert device.name == "Driveway"
+        assert device.serial == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx1"
+        assert device.software_version == "1.9.3"
+        assert device.station_serial == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 
 @pytest.mark.asyncio
@@ -68,8 +68,8 @@ async def test_start_stream(aresponses, login_success_response):
 
     async with aiohttp.ClientSession() as websession:
         api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
-        camera = list(api.cameras.values())[0]
-        stream_url = await camera.async_start_stream()
+        device = list(api.devices.values())[0]
+        stream_url = await device.async_start_stream()
         assert stream_url == "rtmp://p2p-vir-6.eufylife.com/hls/123"
 
 
@@ -99,8 +99,8 @@ async def test_stop_stream(aresponses, login_success_response):
 
     async with aiohttp.ClientSession() as websession:
         api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
-        camera = list(api.cameras.values())[0]
-        await camera.async_stop_stream()
+        device = list(api.devices.values())[0]
+        await device.async_stop_stream()
 
 
 @pytest.mark.asyncio
@@ -131,5 +131,5 @@ async def test_update(aresponses, login_success_response):
 
     async with aiohttp.ClientSession() as websession:
         api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
-        camera = list(api.cameras.values())[0]
-        await camera.async_update()
+        device = list(api.devices.values())[0]
+        await device.async_update()
