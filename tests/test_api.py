@@ -7,6 +7,7 @@ import pytest
 
 from eufy_security import async_login
 from eufy_security.errors import InvalidCredentialsError, RequestError
+from eufy_security.params import ParamType
 
 from .common import TEST_EMAIL, TEST_PASSWORD, load_fixture
 
@@ -303,3 +304,34 @@ async def test_stop_stream(aresponses, login_success_response):
         api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
         device = next(iter(api.devices.values()))
         await api.async_stop_stream(device)
+
+@pytest.mark.asyncio
+async def test_set_params(aresponses, login_success_response):
+    """Test setting params."""
+    aresponses.add(
+        "mysecurity.eufylife.com",
+        "/api/v1/passport/login",
+        "post",
+        aresponses.Response(text=json.dumps(login_success_response), status=200),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
+        "/v1/app/get_devs_list",
+        "post",
+        aresponses.Response(
+            text=load_fixture("devices_list_response.json"), status=200
+        ),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
+        "/v1/app/upload_devs_params",
+        "post",
+        aresponses.Response(
+            text=load_fixture("upload_devs_params_response.json"), status=200
+        ),
+    )
+
+    async with aiohttp.ClientSession() as websession:
+        api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
+        device = next(iter(api.devices.values()))
+        await api.async_set_params(device, {ParamType.SNOOZE_MODE: True})
