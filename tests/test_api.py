@@ -240,3 +240,66 @@ async def test_login_success(aresponses, login_success_response):
         assert api._token is not None
         assert api._token_expiration is not None
         assert len(api.devices) == 2
+
+
+@pytest.mark.asyncio
+async def test_start_stream(aresponses, login_success_response):
+    """Test starting the RTSP stream."""
+    aresponses.add(
+        "mysecurity.eufylife.com",
+        "/api/v1/passport/login",
+        "post",
+        aresponses.Response(text=json.dumps(login_success_response), status=200),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
+        "/v1/app/get_devs_list",
+        "post",
+        aresponses.Response(
+            text=load_fixture("devices_list_response.json"), status=200
+        ),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
+        "/v1/web/equipment/start_stream",
+        "post",
+        aresponses.Response(
+            text=load_fixture("start_stream_response.json"), status=200
+        ),
+    )
+
+    async with aiohttp.ClientSession() as websession:
+        api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
+        device = next(iter(api.devices.values()))
+        stream_url = await api.async_start_stream(device)
+        assert stream_url == "rtmp://p2p-vir-6.eufylife.com/hls/123"
+
+
+@pytest.mark.asyncio
+async def test_stop_stream(aresponses, login_success_response):
+    """Test stopping the RTSP stream."""
+    aresponses.add(
+        "mysecurity.eufylife.com",
+        "/api/v1/passport/login",
+        "post",
+        aresponses.Response(text=json.dumps(login_success_response), status=200),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
+        "/v1/app/get_devs_list",
+        "post",
+        aresponses.Response(
+            text=load_fixture("devices_list_response.json"), status=200
+        ),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
+        "/v1/web/equipment/stop_stream",
+        "post",
+        aresponses.Response(text=load_fixture("stop_stream_response.json"), status=200),
+    )
+
+    async with aiohttp.ClientSession() as websession:
+        api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
+        device = next(iter(api.devices.values()))
+        await api.async_stop_stream(device)
