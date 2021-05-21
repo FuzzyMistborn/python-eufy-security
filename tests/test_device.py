@@ -6,6 +6,7 @@ import pytest
 
 from eufy_security import async_login
 from eufy_security.device import Device
+from eufy_security.params import ParamType
 from eufy_security.types import DeviceType
 
 from .common import TEST_EMAIL, TEST_PASSWORD, load_fixture, load_json_fixture
@@ -54,7 +55,7 @@ async def test_start_stream(aresponses, login_success_response):
 
     async with aiohttp.ClientSession() as websession:
         api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
-        device = list(api.devices.values())[0]
+        device = next(iter(api.devices.values()))
         stream_url = await device.async_start_stream()
         assert stream_url == "rtmp://p2p-vir-6.eufylife.com/hls/123"
 
@@ -85,7 +86,7 @@ async def test_stop_stream(aresponses, login_success_response):
 
     async with aiohttp.ClientSession() as websession:
         api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
-        device = list(api.devices.values())[0]
+        device = next(iter(api.devices.values()))
         await device.async_stop_stream()
 
 
@@ -117,5 +118,37 @@ async def test_update(aresponses, login_success_response):
 
     async with aiohttp.ClientSession() as websession:
         api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
-        device = list(api.devices.values())[0]
+        device = next(iter(api.devices.values()))
         await device.async_update()
+
+
+@pytest.mark.asyncio
+async def test_set_params(aresponses, login_success_response):
+    """Test setting params."""
+    aresponses.add(
+        "mysecurity.eufylife.com",
+        "/api/v1/passport/login",
+        "post",
+        aresponses.Response(text=json.dumps(login_success_response), status=200),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
+        "/v1/app/get_devs_list",
+        "post",
+        aresponses.Response(
+            text=load_fixture("devices_list_response.json"), status=200
+        ),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
+        "/v1/app/upload_devs_params",
+        "post",
+        aresponses.Response(
+            text=load_fixture("upload_devs_params_response.json"), status=200
+        ),
+    )
+
+    async with aiohttp.ClientSession() as websession:
+        api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
+        device = next(iter(api.devices.values()))
+        await device.async_set_params({ParamType.SNOOZE_MODE: True})
