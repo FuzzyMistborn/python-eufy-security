@@ -34,9 +34,9 @@ jobs:
           architecture: x64
 
       - run: |
-          python -m venv venv
-          venv/bin/pip install -r requirements_test.txt
-          venv/bin/py.test tests/
+          python -m pip install --upgrade pip poetry
+          poetry install
+          poetry run pytest tests/
 
   coverage:
 
@@ -53,9 +53,9 @@ jobs:
           architecture: x64
 
       - run: |
-          python -m venv venv
-          venv/bin/pip install -r requirements_test.txt
-                    venv/bin/py.test \
+          python -m pip install --upgrade pip poetry
+          poetry install
+          poetry run pytest \
             -s \
             --verbose \
             --cov-report term-missing \
@@ -90,7 +90,7 @@ jobs:
             pre-commit|${{ steps.version.outputs.sha }}|${{ hashFiles('.pre-commit-config.yaml') }}
 
       - run: |
-          python -m venv venv
-          venv/bin/pip install pre-commit
-          venv/bin/pre-commit install-hooks --config .pre-commit-config.yaml
-          venv/bin/pre-commit run --all-files
+          python -m pip install --upgrade pip poetry
+          poetry install
+          poetry run pre-commit install-hooks
+          poetry run pre-commit run --all-files
