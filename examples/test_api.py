@@ -1,6 +1,7 @@
 """Run an example script to quickly test."""
 import asyncio
 import logging
+import os
 
 from aiohttp import ClientSession
 
@@ -9,8 +10,8 @@ from eufy_security.errors import EufySecurityError
 
 _LOGGER: logging.Logger = logging.getLogger()
 
-EUFY_EMAIL: str = "<EMAIL>"
-EUFY_PASSWORD: str = "<PASSWORD>"
+EUFY_EMAIL: str = os.environ.get("EUFY_EMAIL")
+EUFY_PASSWORD: str = os.environ.get("EUFY_PASSWORD")
 
 
 async def main() -> None:
