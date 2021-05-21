@@ -27,6 +27,16 @@ def test_properties():
     assert device.station_serial == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 
+def test_update():
+    """Test updating the device data."""
+    device_infos = load_json_fixture("devices_list_response.json")["data"]
+    device = Device(None, device_infos[0])
+    assert device.serial == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx1"
+
+    device.update(device_infos[1])
+    assert device.serial == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx2"
+
+
 @pytest.mark.asyncio
 async def test_start_stream(aresponses, login_success_response):
     """Test starting the RTSP stream."""
@@ -91,7 +101,7 @@ async def test_stop_stream(aresponses, login_success_response):
 
 
 @pytest.mark.asyncio
-async def test_update(aresponses, login_success_response):
+async def test_async_update(aresponses, login_success_response):
     """Test stopping the RTSP stream."""
     aresponses.add(
         "mysecurity.eufylife.com",
