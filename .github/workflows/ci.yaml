@@ -34,9 +34,9 @@ jobs:
           architecture: x64
 
       - run: |
-          python -m venv venv
-          venv/bin/pip install -r requirements_test.txt
-          venv/bin/py.test tests/
+          python -m pip install --upgrade pip poetry
+          poetry install
+          poetry run pytest tests/
 
   coverage:
 
@@ -53,9 +53,9 @@ jobs:
           architecture: x64
 
       - run: |
-          python -m venv venv
-          venv/bin/pip install -r requirements_test.txt
-                    venv/bin/py.test \
+          python -m pip install --upgrade pip poetry
+          poetry install
+          poetry run pytest \
             -s \
             --verbose \
             --cov-report term-missing \
@@ -80,24 +80,17 @@ jobs:
           python-version: "3.x"
           architecture: x64
 
-      - run: echo "::set-env name=PY::$(python -VV | sha256sum | cut -d' ' -f1)"
+      - id: version
+        run: echo "::set-output name=sha::$(python -VV | sha256sum | cut -d' ' -f1)"
 
       - uses: actions/cache@v1
         with:
           path: ~/.cache/pre-commit
           key: >
-            pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
+            pre-commit|${{ steps.version.outputs.sha }}|${{ hashFiles('.pre-commit-config.yaml') }}
 
       - run: |
-          python -m venv venv
-          venv/bin/pip install pre-commit
-          venv/bin/pre-commit install-hooks --config .pre-commit-config.yaml
-          venv/bin/pre-commit run bandit --all-files
-          venv/bin/pre-commit run black --all-files
-          venv/bin/pre-commit run check-json --all-files
-          venv/bin/pre-commit run codespell --all-files
-          venv/bin/pre-commit run flake8 --all-files
-          venv/bin/pre-commit run isort --all-files
-          venv/bin/pre-commit run mypy --all-files
-          venv/bin/pre-commit run pydocstyle --all-files
-          venv/bin/pre-commit run shellcheck --all-files
+          python -m pip install --upgrade pip poetry
+          poetry install
+          poetry run pre-commit install-hooks
+          poetry run pre-commit run --all-files
