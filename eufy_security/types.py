@@ -1,7 +1,10 @@
+"""Define types."""
 from enum import Enum
+
 
 class DeviceType(Enum):
     """List of device types."""
+
     # List retrieved from com.oceanwing.battery.cam.binder.model.QueryDeviceData
 
     BATTERY_DOORBELL = 7

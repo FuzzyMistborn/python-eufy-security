@@ -1,14 +1,14 @@
 """Define a base object for interacting with the Eufy camera API."""
 from datetime import datetime
 import logging
-from typing import List, Dict, Optional
+from typing import Dict, Optional
 
 from aiohttp import ClientSession
 from aiohttp.client_exceptions import ClientError
 
 from .device import Device
-from .params import ParamType
 from .errors import InvalidCredentialsError, RequestError, raise_error
+from .params import ParamType
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -31,12 +31,8 @@ class API:  # pylint: disable=too-many-instance-attributes
 
     @property
     def cameras(self) -> Dict[str, Device]:
-        """Deprecated: Return a dictionary of cameras."""
-        return {
-            sn: device
-            for sn, device in self.devices
-            if device.is_camera
-        }
+        """Return a dictionary of cameras. Deprecated."""
+        return {sn: device for sn, device in self.devices if device.is_camera}
 
     async def async_authenticate(self) -> None:
         """Authenticate and get an access token."""

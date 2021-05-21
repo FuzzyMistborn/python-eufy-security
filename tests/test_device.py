@@ -12,6 +12,7 @@ from .common import TEST_EMAIL, TEST_PASSWORD, load_fixture, load_json_fixture
 
 
 def test_properties():
+    """Test device properties."""
     device_info = load_json_fixture("devices_list_response.json")["data"][0]
     device = Device(None, device_info)
     assert device.type == DeviceType.CAMERA
