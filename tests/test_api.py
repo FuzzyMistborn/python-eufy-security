@@ -305,6 +305,7 @@ async def test_stop_stream(aresponses, login_success_response):
         device = next(iter(api.devices.values()))
         await api.async_stop_stream(device)
 
+
 @pytest.mark.asyncio
 async def test_set_params(aresponses, login_success_response):
     """Test setting params."""

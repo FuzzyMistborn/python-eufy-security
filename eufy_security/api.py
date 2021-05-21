@@ -32,7 +32,7 @@ class API:  # pylint: disable=too-many-instance-attributes
     @property
     def cameras(self) -> Dict[str, Device]:
         """Return a dictionary of cameras. Deprecated."""
-        return {sn: device for sn, device in self.devices if device.is_camera}
+        return {sn: device for sn, device in self.devices.items() if device.is_camera}
 
     async def async_authenticate(self) -> None:
         """Authenticate and get an access token."""
