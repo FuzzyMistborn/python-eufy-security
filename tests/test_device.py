@@ -5,39 +5,22 @@ import aiohttp
 import pytest
 
 from eufy_security import async_login
+from eufy_security.device import Device
 
-from .common import TEST_EMAIL, TEST_PASSWORD, load_fixture
+from .common import TEST_EMAIL, TEST_PASSWORD, load_fixture, load_json_fixture
 
 
-@pytest.mark.asyncio
-async def test_properties(aresponses, login_success_response):
-    """Test authenticating with a bad email."""
-    aresponses.add(
-        "mysecurity.eufylife.com",
-        "/api/v1/passport/login",
-        "post",
-        aresponses.Response(text=json.dumps(login_success_response), status=200),
-    )
-    aresponses.add(
-        "security-app.eufylife.com",
-        "/v1/app/get_devs_list",
-        "post",
-        aresponses.Response(
-            text=load_fixture("devices_list_response.json"), status=200
-        ),
-    )
-
-    async with aiohttp.ClientSession() as websession:
-        api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
-        device = list(api.devices.values())[0]
-        assert device.hardware_version == "HAIYI-IMX323"
-        assert device.last_camera_image_url == "https://path/to/image.jpg"
-        assert device.mac == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-        assert device.model == "T8111"
-        assert device.name == "Driveway"
-        assert device.serial == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx1"
-        assert device.software_version == "1.9.3"
-        assert device.station_serial == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+def test_properties():
+    device_info = load_json_fixture("devices_list_response.json")["data"][0]
+    device = Device(None, device_info)
+    assert device.hardware_version == "HAIYI-IMX323"
+    assert device.last_camera_image_url == "https://path/to/image.jpg"
+    assert device.mac == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    assert device.model == "T8111"
+    assert device.name == "Driveway"
+    assert device.serial == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx1"
+    assert device.software_version == "1.9.3"
+    assert device.station_serial == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 
 @pytest.mark.asyncio
