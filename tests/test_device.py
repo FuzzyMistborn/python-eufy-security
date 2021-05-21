@@ -37,6 +37,42 @@ def test_update():
     assert device.serial == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx2"
 
 
+def test_is_camera():
+    """Test the device is a camera."""
+    camera = Device(None, {"device_type": DeviceType.CAMERA.value})
+    assert camera.is_camera
+
+    station = Device(None, {"device_type": DeviceType.STATION.value})
+    assert not station.is_camera
+
+
+def test_is_station():
+    """Test the device is a station."""
+    station = Device(None, {"device_type": DeviceType.STATION.value})
+    assert station.is_station
+
+    camera = Device(None, {"device_type": DeviceType.CAMERA.value})
+    assert not camera.is_station
+
+
+def test_is_sensor():
+    """Test the device is a sensor."""
+    sensor = Device(None, {"device_type": DeviceType.SENSOR.value})
+    assert sensor.is_sensor
+
+    camera = Device(None, {"device_type": DeviceType.CAMERA.value})
+    assert not camera.is_sensor
+
+
+def test_is_doorbell():
+    """Test the device is a doorbell."""
+    doorbell = Device(None, {"device_type": DeviceType.DOORBELL.value})
+    assert doorbell.is_doorbell
+
+    camera = Device(None, {"device_type": DeviceType.CAMERA.value})
+    assert not camera.is_doorbell
+
+
 @pytest.mark.asyncio
 async def test_start_stream(aresponses, login_success_response):
     """Test starting the RTSP stream."""
