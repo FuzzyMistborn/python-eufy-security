@@ -2,6 +2,7 @@
 import logging
 from typing import TYPE_CHECKING
 
+from .types import DeviceType
 from .params import ParamType
 
 if TYPE_CHECKING:
@@ -21,6 +22,31 @@ class Device:
     def update(self, device_info: dict) -> None:
         """Update the device's info."""
         self.device_info = device_info
+
+    @property
+    def type(self) -> DeviceType:
+        """Return the device's type."""
+        return DeviceType(self.device_info["device_type"])
+
+    @property
+    def is_camera(self) -> bool:
+        """Return whether device is a camera."""
+        return self.type.is_camera
+
+    @property
+    def is_station(self) -> bool:
+        """Return whether device is a station."""
+        return self.type.is_station
+
+    @property
+    def is_sensor(self) -> bool:
+        """Return whether device is a sensor."""
+        return self.type.is_sensor
+
+    @property
+    def is_doorbell(self) -> bool:
+        """Return whether device is a doorbell."""
+        return self.type.is_doorbell
 
     @property
     def serial(self) -> str:

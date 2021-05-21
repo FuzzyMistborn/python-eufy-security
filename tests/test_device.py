@@ -6,6 +6,7 @@ import pytest
 
 from eufy_security import async_login
 from eufy_security.device import Device
+from eufy_security.types import DeviceType
 
 from .common import TEST_EMAIL, TEST_PASSWORD, load_fixture, load_json_fixture
 
@@ -13,6 +14,7 @@ from .common import TEST_EMAIL, TEST_PASSWORD, load_fixture, load_json_fixture
 def test_properties():
     device_info = load_json_fixture("devices_list_response.json")["data"][0]
     device = Device(None, device_info)
+    assert device.type == DeviceType.CAMERA
     assert device.hardware_version == "HAIYI-IMX323"
     assert device.last_camera_image_url == "https://path/to/image.jpg"
     assert device.mac == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
