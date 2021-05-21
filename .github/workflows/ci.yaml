@@ -80,13 +80,14 @@ jobs:
           python-version: "3.x"
           architecture: x64
 
-      - run: echo "::set-env name=PY::$(python -VV | sha256sum | cut -d' ' -f1)"
+      - id: version
+        run: echo "::set-output name=sha::$(python -VV | sha256sum | cut -d' ' -f1)"
 
       - uses: actions/cache@v1
         with:
           path: ~/.cache/pre-commit
           key: >
-            pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
+            pre-commit|${{ steps.version.outputs.sha }}|${{ hashFiles('.pre-commit-config.yaml') }}
 
       - run: |
           python -m venv venv
