@@ -17,11 +17,14 @@ class Device:
     def __init__(self, api: "API", device_info: dict) -> None:
         """Initialize."""
         self._api = api
-        self.device_info = device_info
+        self.device_info = {}
+        self.update(device_info)
 
     def update(self, device_info: dict) -> None:
         """Update the device's info."""
-        self.device_info = device_info
+        if isinstance(device_info, Device):
+            device_info = device_info.device_info
+        self.device_info.update(device_info)
 
     @property
     def type(self) -> DeviceType:
@@ -128,3 +131,34 @@ class Device:
     async def async_update(self) -> None:
         """Get the latest values for the device's properties."""
         await self._api.async_update_device_info()
+
+
+class DeviceDict(dict):
+    """A dictionary of devices."""
+
+    _cls = Device
+
+    def __init__(self, api: "API"):
+        """Initialize DeviceDict."""
+        self._api = api
+
+    def update(self, device_infos):
+        """Update devices from a list of dictionary."""
+        if type(device_infos) == list:
+            devices = {}
+            for device_info in device_infos:
+                device = self._cls(self._api, device_info)
+                devices[device.serial] = device
+            device_infos = devices
+
+        if type(device_infos) != dict:
+            raise TypeError(type(device_infos))
+
+        for key, device_info in device_infos.items():
+            if key in self:
+                self[key].update(device_info)
+            else:
+                device = self._cls(self._api, device_info)
+                if device.serial != key:
+                    raise KeyError(key)
+                self[key] = device

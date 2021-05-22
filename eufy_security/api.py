@@ -6,7 +6,7 @@ from typing import Dict, Optional
 from aiohttp import ClientSession
 from aiohttp.client_exceptions import ClientError
 
-from .device import Device
+from .device import Device, DeviceDict
 from .errors import InvalidCredentialsError, RequestError, raise_error
 from .params import ParamType
 
@@ -27,7 +27,7 @@ class API:  # pylint: disable=too-many-instance-attributes
         self._session: ClientSession = websession
         self._token: Optional[str] = None
         self._token_expiration: Optional[datetime] = None
-        self.devices: Dict[str, Device] = {}
+        self.devices: DeviceDict = DeviceDict(self)
 
     @property
     def cameras(self) -> Dict[str, Device]:
@@ -60,12 +60,7 @@ class API:  # pylint: disable=too-many-instance-attributes
     async def async_update_device_info(self) -> None:
         """Get the latest device info."""
         devices_resp = await self.request("post", "app/get_devs_list")
-        for device_info in devices_resp.get("data", []):
-            device = Device(self, device_info)
-            if device.serial in self.devices:
-                self.devices[device.serial].update(device_info)
-            else:
-                self.devices[device.serial] = device
+        self.devices.update(devices_resp.get("data", []))
 
     async def async_set_params(self, device: Device, params: dict) -> None:
         """Set device parameters."""
