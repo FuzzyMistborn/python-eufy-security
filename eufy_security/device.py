@@ -162,3 +162,28 @@ class DeviceDict(dict):
                 if device.serial != key:
                     raise KeyError(key)
                 self[key] = device
+
+
+class Station(Device):
+    """Define the station object."""
+
+    @property
+    def serial(self) -> str:
+        """Return the station's serial number."""
+        return self.station_serial
+
+    @property
+    def model(self) -> str:
+        """Return the station's model."""
+        return self.device_info["station_model"]
+
+    @property
+    def name(self) -> str:
+        """Return the station name."""
+        return self.device_info["station_name"]
+
+
+class StationDict(DeviceDict):
+    """A dictionary of stations."""
+
+    _cls = Station
