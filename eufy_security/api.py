@@ -6,7 +6,7 @@ from typing import Dict, Optional
 from aiohttp import ClientSession
 from aiohttp.client_exceptions import ClientError
 
-from .device import Device
+from .device import Device, DeviceDict, StationDict
 from .errors import InvalidCredentialsError, RequestError, raise_error
 from .params import ParamType
 
@@ -27,7 +27,8 @@ class API:  # pylint: disable=too-many-instance-attributes
         self._session: ClientSession = websession
         self._token: Optional[str] = None
         self._token_expiration: Optional[datetime] = None
-        self.devices: Dict[str, Device] = {}
+        self.devices: DeviceDict = DeviceDict(self)
+        self.stations: StationDict = StationDict(self)
 
     @property
     def cameras(self) -> Dict[str, Device]:
@@ -60,30 +61,40 @@ class API:  # pylint: disable=too-many-instance-attributes
     async def async_update_device_info(self) -> None:
         """Get the latest device info."""
         devices_resp = await self.request("post", "app/get_devs_list")
-        for device_info in devices_resp.get("data", []):
-            device = Device(self, device_info)
-            if device.serial in self.devices:
-                self.devices[device.serial].update(device_info)
-            else:
-                self.devices[device.serial] = device
+        self.devices.update(devices_resp["data"])
+
+        stations_resp = await self.request("post", "app/get_hub_list")
+        self.stations.update(stations_resp["data"])
 
     async def async_set_params(self, device: Device, params: dict) -> None:
         """Set device parameters."""
         serialized_params = []
+
         for param_type, value in params.items():
             if isinstance(param_type, ParamType):
                 value = param_type.write_value(value)
                 param_type = param_type.value
             serialized_params.append({"param_type": param_type, "param_value": value})
-        await self.request(
-            "post",
-            "app/upload_devs_params",
-            json={
-                "device_sn": device.serial,
-                "station_sn": device.station_serial,
-                "params": serialized_params,
-            },
-        )
+
+        if device.is_station:
+            await self.request(
+                "post",
+                "app/upload_hub_params",
+                json={
+                    "station_sn": device.station_serial,
+                    "params": serialized_params,
+                },
+            )
+        else:
+            await self.request(
+                "post",
+                "app/upload_devs_params",
+                json={
+                    "device_sn": device.serial,
+                    "station_sn": device.station_serial,
+                    "params": serialized_params,
+                },
+            )
 
     async def async_start_stream(self, device: Device) -> str:
         """Start the device stream and return the RTSP URL."""

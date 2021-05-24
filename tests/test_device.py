@@ -5,7 +5,7 @@ import aiohttp
 import pytest
 
 from eufy_security import async_login
-from eufy_security.device import Device
+from eufy_security.device import Device, DeviceDict
 from eufy_security.params import ParamType
 from eufy_security.types import DeviceType
 
@@ -92,6 +92,12 @@ async def test_start_stream(aresponses, login_success_response):
     )
     aresponses.add(
         "security-app.eufylife.com",
+        "/v1/app/get_hub_list",
+        "post",
+        aresponses.Response(text=load_fixture("hub_list_response.json"), status=200),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
         "/v1/web/equipment/start_stream",
         "post",
         aresponses.Response(
@@ -125,6 +131,12 @@ async def test_stop_stream(aresponses, login_success_response):
     )
     aresponses.add(
         "security-app.eufylife.com",
+        "/v1/app/get_hub_list",
+        "post",
+        aresponses.Response(text=load_fixture("hub_list_response.json"), status=200),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
         "/v1/web/equipment/stop_stream",
         "post",
         aresponses.Response(text=load_fixture("stop_stream_response.json"), status=200),
@@ -155,11 +167,23 @@ async def test_async_update(aresponses, login_success_response):
     )
     aresponses.add(
         "security-app.eufylife.com",
+        "/v1/app/get_hub_list",
+        "post",
+        aresponses.Response(text=load_fixture("hub_list_response.json"), status=200),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
         "/v1/app/get_devs_list",
         "post",
         aresponses.Response(
             text=load_fixture("devices_list_response.json"), status=200
         ),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
+        "/v1/app/get_hub_list",
+        "post",
+        aresponses.Response(text=load_fixture("hub_list_response.json"), status=200),
     )
 
     async with aiohttp.ClientSession() as websession:
@@ -187,6 +211,12 @@ async def test_set_params(aresponses, login_success_response):
     )
     aresponses.add(
         "security-app.eufylife.com",
+        "/v1/app/get_hub_list",
+        "post",
+        aresponses.Response(text=load_fixture("hub_list_response.json"), status=200),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
         "/v1/app/upload_devs_params",
         "post",
         aresponses.Response(
@@ -198,3 +228,39 @@ async def test_set_params(aresponses, login_success_response):
         api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
         device = next(iter(api.devices.values()))
         await device.async_set_params({ParamType.SNOOZE_MODE: True})
+
+
+def test_device_dict_with_dict():
+    """Test updating DeviceDict with a dict."""
+    device_infos = load_json_fixture("devices_list_response.json")["data"]
+    dd = DeviceDict(None)
+    dd.update(device_infos)
+    assert dd["xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx1"].name == "Driveway"
+
+    dd.update(
+        {
+            device_info["device_sn"]: {**device_info, "device_name": "Updated"}
+            for device_info in device_infos
+        }
+    )
+    assert dd["xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx1"].name == "Updated"
+
+
+def test_device_dict_with_list():
+    """Test updating DeviceDict with a list."""
+    device_infos = load_json_fixture("devices_list_response.json")["data"]
+    dd = DeviceDict(None)
+    dd.update(device_infos)
+    assert dd["xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx1"].name == "Driveway"
+
+    dd.update(
+        [{**device_info, "device_name": "Updated"} for device_info in device_infos]
+    )
+    assert dd["xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx1"].name == "Updated"
+
+
+def test_device_dict_with_none():
+    """Test updating DeviceDict with None."""
+    dd = DeviceDict(None)
+    with pytest.raises(TypeError):
+        dd.update(None)

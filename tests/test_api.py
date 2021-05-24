@@ -29,6 +29,12 @@ async def test_401_refresh_failure(aresponses, login_success_response):
     )
     aresponses.add(
         "security-app.eufylife.com",
+        "/v1/app/get_hub_list",
+        "post",
+        aresponses.Response(text=load_fixture("hub_list_response.json"), status=200),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
         "/v1/passport/login",
         "post",
         aresponses.Response(text=None, status=401),
@@ -58,6 +64,12 @@ async def test_401_refresh_success(aresponses, login_success_response):
     )
     aresponses.add(
         "security-app.eufylife.com",
+        "/v1/app/get_hub_list",
+        "post",
+        aresponses.Response(text=load_fixture("hub_list_response.json"), status=200),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
         "/v1/passport/login",
         "post",
         aresponses.Response(text=json.dumps(login_success_response), status=200),
@@ -69,6 +81,12 @@ async def test_401_refresh_success(aresponses, login_success_response):
         aresponses.Response(
             text=load_fixture("devices_list_response.json"), status=200
         ),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
+        "/v1/app/get_hub_list",
+        "post",
+        aresponses.Response(text=load_fixture("hub_list_response.json"), status=200),
     )
 
     async with aiohttp.ClientSession() as websession:
@@ -126,6 +144,12 @@ async def test_empty_response(aresponses, login_success_response):
         "post",
         aresponses.Response(text=load_fixture("empty_response.json"), status=200),
     )
+    aresponses.add(
+        "security-app.eufylife.com",
+        "/v1/app/get_hub_list",
+        "post",
+        aresponses.Response(text=load_fixture("hub_list_response.json"), status=200),
+    )
 
     async with aiohttp.ClientSession() as websession:
         with pytest.raises(RequestError):
@@ -151,6 +175,12 @@ async def test_expired_access_token(aresponses, login_success_response):
     )
     aresponses.add(
         "security-app.eufylife.com",
+        "/v1/app/get_hub_list",
+        "post",
+        aresponses.Response(text=load_fixture("hub_list_response.json"), status=200),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
         "/v1/passport/login",
         "post",
         aresponses.Response(text=json.dumps(login_success_response), status=200),
@@ -162,6 +192,12 @@ async def test_expired_access_token(aresponses, login_success_response):
         aresponses.Response(
             text=load_fixture("devices_list_response.json"), status=200
         ),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
+        "/v1/app/get_hub_list",
+        "post",
+        aresponses.Response(text=load_fixture("hub_list_response.json"), status=200),
     )
 
     async with aiohttp.ClientSession() as websession:
@@ -187,6 +223,12 @@ async def test_get_history(aresponses, login_success_response):
         aresponses.Response(
             text=load_fixture("devices_list_response.json"), status=200
         ),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
+        "/v1/app/get_hub_list",
+        "post",
+        aresponses.Response(text=load_fixture("hub_list_response.json"), status=200),
     )
     aresponses.add(
         "security-app.eufylife.com",
@@ -233,6 +275,12 @@ async def test_login_success(aresponses, login_success_response):
             text=load_fixture("devices_list_response.json"), status=200
         ),
     )
+    aresponses.add(
+        "security-app.eufylife.com",
+        "/v1/app/get_hub_list",
+        "post",
+        aresponses.Response(text=load_fixture("hub_list_response.json"), status=200),
+    )
 
     async with aiohttp.ClientSession() as websession:
         api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
@@ -259,6 +307,12 @@ async def test_start_stream(aresponses, login_success_response):
         aresponses.Response(
             text=load_fixture("devices_list_response.json"), status=200
         ),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
+        "/v1/app/get_hub_list",
+        "post",
+        aresponses.Response(text=load_fixture("hub_list_response.json"), status=200),
     )
     aresponses.add(
         "security-app.eufylife.com",
@@ -295,6 +349,12 @@ async def test_stop_stream(aresponses, login_success_response):
     )
     aresponses.add(
         "security-app.eufylife.com",
+        "/v1/app/get_hub_list",
+        "post",
+        aresponses.Response(text=load_fixture("hub_list_response.json"), status=200),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
         "/v1/web/equipment/stop_stream",
         "post",
         aresponses.Response(text=load_fixture("stop_stream_response.json"), status=200),
@@ -307,8 +367,8 @@ async def test_stop_stream(aresponses, login_success_response):
 
 
 @pytest.mark.asyncio
-async def test_set_params(aresponses, login_success_response):
-    """Test setting params."""
+async def test_set_params_for_device(aresponses, login_success_response):
+    """Test setting device params."""
     aresponses.add(
         "mysecurity.eufylife.com",
         "/api/v1/passport/login",
@@ -325,6 +385,12 @@ async def test_set_params(aresponses, login_success_response):
     )
     aresponses.add(
         "security-app.eufylife.com",
+        "/v1/app/get_hub_list",
+        "post",
+        aresponses.Response(text=load_fixture("hub_list_response.json"), status=200),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
         "/v1/app/upload_devs_params",
         "post",
         aresponses.Response(
@@ -336,3 +402,41 @@ async def test_set_params(aresponses, login_success_response):
         api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
         device = next(iter(api.devices.values()))
         await api.async_set_params(device, {ParamType.SNOOZE_MODE: True})
+
+
+@pytest.mark.asyncio
+async def test_set_params_for_station(aresponses, login_success_response):
+    """Test setting station params."""
+    aresponses.add(
+        "mysecurity.eufylife.com",
+        "/api/v1/passport/login",
+        "post",
+        aresponses.Response(text=json.dumps(login_success_response), status=200),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
+        "/v1/app/get_devs_list",
+        "post",
+        aresponses.Response(
+            text=load_fixture("devices_list_response.json"), status=200
+        ),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
+        "/v1/app/get_hub_list",
+        "post",
+        aresponses.Response(text=load_fixture("hub_list_response.json"), status=200),
+    )
+    aresponses.add(
+        "security-app.eufylife.com",
+        "/v1/app/upload_hub_params",
+        "post",
+        aresponses.Response(
+            text=load_fixture("upload_devs_params_response.json"), status=200
+        ),
+    )
+
+    async with aiohttp.ClientSession() as websession:
+        api = await async_login(TEST_EMAIL, TEST_PASSWORD, websession)
+        station = next(iter(api.stations.values()))
+        await api.async_set_params(station, {ParamType.SNOOZE_MODE: True})
