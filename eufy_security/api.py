@@ -8,7 +8,7 @@ from aiohttp.client_exceptions import ClientError
 
 from .device import Device, DeviceDict, StationDict
 from .errors import InvalidCredentialsError, RequestError, raise_error
-from .params import ParamType
+from .types import ParamType
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -72,7 +72,7 @@ class API:  # pylint: disable=too-many-instance-attributes
 
         for param_type, value in params.items():
             if isinstance(param_type, ParamType):
-                value = param_type.write_value(value)
+                value = param_type.dumps(value)
                 param_type = param_type.value
             serialized_params.append({"param_type": param_type, "param_value": value})
 

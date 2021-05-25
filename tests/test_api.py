@@ -7,7 +7,7 @@ import pytest
 
 from eufy_security import async_login
 from eufy_security.errors import InvalidCredentialsError, RequestError
-from eufy_security.params import ParamType
+from eufy_security.types import ParamType
 
 from .common import TEST_EMAIL, TEST_PASSWORD, load_fixture
 
