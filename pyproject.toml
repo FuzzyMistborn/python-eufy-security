@@ -40,7 +40,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-aiohttp = "3.6.1"
+aiohttp = "^3.6.1"
 python = "^3.6.1"
 
 [tool.poetry.dev-dependencies]
