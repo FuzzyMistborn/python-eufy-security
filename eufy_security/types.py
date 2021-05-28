@@ -108,6 +108,16 @@ class ParamType(Enum):
         """Write a parameter JSON string."""
         return self._converter_.dumps(value)
 
+    @staticmethod
+    def lookup(name_or_value):
+        """Look up a param type by its number or name."""
+        if isinstance(name_or_value, ParamType):
+            return name_or_value
+        if type(name_or_value) == str:
+            return ParamType[name_or_value]
+        else:
+            return ParamType(name_or_value)
+
     CHIME_STATE = 2015
     DETECT_EXPOSURE = 2023
     DETECT_MODE = 2004

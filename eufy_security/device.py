@@ -2,8 +2,8 @@
 import logging
 from typing import TYPE_CHECKING
 
-from .params import ParamType
-from .types import DeviceType
+from .param import Params
+from .types import DeviceType, ParamType
 
 if TYPE_CHECKING:
     from .api import API  # pylint: disable=cyclic-import
@@ -92,21 +92,9 @@ class Device:
         return self.device_info["device_name"]
 
     @property
-    def params(self) -> dict:
+    def params(self) -> Params:
         """Return device parameters."""
-        params = {}
-        for param in self.device_info["params"]:
-            param_type = param["param_type"]
-            value = param["param_value"]
-            try:
-                param_type = ParamType(param_type)
-                value = param_type.loads(value)
-            except ValueError:
-                _LOGGER.debug(
-                    'Unable to process parameter "%s", value "%s"', param_type, value
-                )
-            params[param_type] = value
-        return params
+        return Params(self.device_info["params"])
 
     async def async_set_params(self, params: dict) -> None:
         """Set device parameters."""
