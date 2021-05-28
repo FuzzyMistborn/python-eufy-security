@@ -6,8 +6,7 @@ import pytest
 
 from eufy_security import async_login
 from eufy_security.device import Device, DeviceDict
-from eufy_security.params import ParamType
-from eufy_security.types import DeviceType
+from eufy_security.types import DeviceType, ParamType
 
 from .common import TEST_EMAIL, TEST_PASSWORD, load_fixture, load_json_fixture
 

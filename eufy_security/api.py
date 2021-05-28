@@ -8,7 +8,7 @@ from aiohttp.client_exceptions import ClientError
 
 from .device import Device, DeviceDict, StationDict
 from .errors import InvalidCredentialsError, RequestError, raise_error
-from .params import ParamType
+from .param import Params
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -66,15 +66,11 @@ class API:  # pylint: disable=too-many-instance-attributes
         stations_resp = await self.request("post", "app/get_hub_list")
         self.stations.update(stations_resp["data"])
 
-    async def async_set_params(self, device: Device, params: dict) -> None:
+    async def async_set_params(self, device: Device, data: dict) -> None:
         """Set device parameters."""
-        serialized_params = []
-
-        for param_type, value in params.items():
-            if isinstance(param_type, ParamType):
-                value = param_type.write_value(value)
-                param_type = param_type.value
-            serialized_params.append({"param_type": param_type, "param_value": value})
+        params = Params()
+        params.update(data)
+        serialized_params = [param.param_info for param in params]
 
         if device.is_station:
             await self.request(
