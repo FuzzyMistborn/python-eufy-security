@@ -1,8 +1,9 @@
 """Define converters."""
 import base64
 from datetime import datetime, timezone
+from enum import Enum
 import json
-from typing import Any, Union
+from typing import Any, Type, Union
 
 
 class StringConverter:
@@ -98,3 +99,21 @@ class DatetimeConverter:
     def dumps(value: datetime) -> str:
         """Convert datetime into a timestamp."""
         return str(int(value.replace(tzinfo=timezone.utc).timestamp()))
+
+
+class EnumConverter:
+    """Convert values to and from an enum."""
+
+    def __init__(self, enum: Type[Enum]):
+        """Initialise converter with given enum."""
+        self._enum = enum
+
+    def loads(self, value: Any) -> Enum:
+        """Return the enum for the given value."""
+        return self._enum(value)
+
+    def dumps(self, value: Enum) -> Any:
+        """Return the value for the given enum."""
+        if not isinstance(value, self._enum):
+            value = self._enum[value]
+        return value.value
