@@ -1,6 +1,7 @@
 """Define tests for converters."""
 
 from datetime import datetime, timezone
+from enum import Enum
 
 import pytest
 
@@ -75,3 +76,18 @@ def test_datetime_dumps():
     """Test dumping data as a json-encoded string."""
     dt = datetime(2019, 8, 5, 12, 31, 39, tzinfo=timezone.utc)
     assert DatetimeConverter.dumps(dt) == "1565008299"
+
+
+def test_enum_loads():
+    """Test loading data to an enum."""
+    Color = Enum("Color", "RED GREEN BLUE")
+    converter = EnumConverter(Color)
+    assert converter.loads(1) == Color.RED
+
+
+def test_enum_dumps():
+    """Test dumping enum as a value."""
+    Color = Enum("Color", "RED GREEN BLUE")
+    converter = EnumConverter(Color)
+    assert converter.dumps(Color.RED) == 1
+    assert converter.dumps("RED") == 1

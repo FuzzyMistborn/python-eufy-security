@@ -3,6 +3,7 @@ from enum import Enum
 
 from .converters import (
     BoolConverter,
+    EnumConverter,
     JsonBase64Converter,
     JsonConverter,
     NumberConverter,
@@ -87,6 +88,36 @@ class DeviceType(Enum):
         ]
 
 
+class ScheduleMode(Enum):
+    """Define schedule modes."""
+
+    AWAY = "0"
+    HOME = "1"
+    DISARMED = "63"
+
+
+class GuardMode(Enum):
+    """Define guard modes."""
+
+    AWAY = "0"
+    HOME = "1"
+    SCHEDULE = "2"
+    CUSTOM1 = "3"
+    CUSTOM2 = "4"
+    CUSTOM3 = "5"
+    OFF = "6"
+    GEOFENCING = "47"
+    DISARMED = "63"
+
+
+class WatermarkMode(Enum):
+    """Define watermark modes."""
+
+    OFF = "0"
+    TIMESTAMP = "1"
+    TIMESTAMP_AND_LOGO = "2"
+
+
 class ParamType(Enum):
     """Define the types.
 
@@ -151,11 +182,11 @@ class ParamType(Enum):
 
     # Inferred from source
     SNOOZE_MODE = 1271, JsonBase64Converter
-    WATERMARK_MODE = 1214  # 1 - hide, 2 - show
+    WATERMARK_MODE = 1214, EnumConverter(WatermarkMode)
     DEVICE_UPGRADE_NOW = 1134
     CAMERA_UPGRADE_NOW = 1133
-    DEFAULT_SCHEDULE_MODE = 1257  # 0 - Away, 1 - Home, 63 - Disarmed
-    GUARD_MODE = 1224  # 0 - Away, 1 - Home, 63 - Disarmed, 2 - Schedule
+    DEFAULT_SCHEDULE_MODE = 1257, EnumConverter(ScheduleMode)
+    GUARD_MODE = 1224, EnumConverter(GuardMode)
 
     FLOODLIGHT_MANUAL_SWITCH = 1400
     FLOODLIGHT_MANUAL_BRIGHTNESS = 1401  # The range is 22-100
@@ -175,7 +206,7 @@ class ParamType(Enum):
     CAMERA_MOTION_ZONES = 1204, JsonBase64Converter
 
     # Set only params?
-    PUSH_MSG_MODE = 1252  # 0 to ???
+    PUSH_MSG_MODE = 1252  # 0 is human detection, 2 is all motions, others???
 
     PRIVATE_MODE = 99904, BoolConverter
     CUSTOM_RTSP_URL = 999991, StringConverter
