@@ -28,10 +28,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: x64
 
       - run: |
           python -m pip install --upgrade pip poetry
@@ -47,10 +46,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v2
         with:
           python-version: "3.x"
-          architecture: x64
 
       - run: |
           python -m pip install --upgrade pip poetry
@@ -75,10 +73,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v2
         with:
           python-version: "3.x"
-          architecture: x64
 
       - id: version
         run: echo "::set-output name=sha::$(python -VV | sha256sum | cut -d' ' -f1)"
