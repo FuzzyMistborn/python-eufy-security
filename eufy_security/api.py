@@ -42,13 +42,12 @@ class API:  # pylint: disable=too-many-instance-attributes
             "passport/login",
             json={"email": self._email, "password": self._password},
         )
+        data = auth_resp["data"]
 
         self._retry_on_401 = False
-        self._token = auth_resp["data"]["auth_token"]
-        self._token_expiration = datetime.fromtimestamp(
-            auth_resp["data"]["token_expires_at"]
-        )
-        domain = auth_resp["data"].get("domain")
+        self._token = data["auth_token"]
+        self._token_expiration = datetime.fromtimestamp(data["token_expires_at"])
+        domain = data.get("domain")
         if domain:
             self._api_base = f"https://{domain}/v1"
             _LOGGER.info("Switching to another API_BASE: %s", self._api_base)
@@ -150,7 +149,7 @@ class API:  # pylint: disable=too-many-instance-attributes
                 if not data:
                     raise RequestError(f"No response while requesting {endpoint}")
 
-                _raise_on_error(data)
+                raise_error(data)
 
                 return data
             except ClientError as err:
@@ -166,13 +165,6 @@ class API:  # pylint: disable=too-many-instance-attributes
                 raise RequestError(
                     f"There was an unknown error while requesting {endpoint}: {err}"
                 ) from None
-
-
-def _raise_on_error(data: dict) -> None:
-    """Raise appropriately when a returned data payload contains an error."""
-    if data["code"] == 0:
-        return
-    raise_error(data)
 
 
 async def async_login(email: str, password: str, websession: ClientSession) -> API:
