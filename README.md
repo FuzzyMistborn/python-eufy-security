@@ -7,6 +7,8 @@
 [![Code Coverage](https://codecov.io/gh/fuzzymistborn/python-eufy-security/branch/master/graph/badge.svg)](https://codecov.io/gh/fuzzymistborn/python-eufy-security)
 [![Say Thanks](https://img.shields.io/badge/SayThanks-!-1EAEDB.svg)](https://saythanks.io/to/fuzzymistborn)
 
+# 🚨 THIS LIBRARY IS CURRENTLY UNMAINTAINED 🚨
+
 This is an experimental Python library for Eufy Security devices (cameras, doorbells,
 etc.).
 
